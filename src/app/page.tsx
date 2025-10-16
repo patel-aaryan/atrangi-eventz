@@ -24,7 +24,7 @@ const staggerContainer = {
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
+    <>
       {/* Hero Section */}
       <section
         id="home"
@@ -350,6 +350,6 @@ export default function Home() {
 
       {/* Sponsors Anchor */}
       <div id="sponsors" className="h-1" />
-    </div>
+    </>
   );
 }

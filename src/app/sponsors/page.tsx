@@ -12,12 +12,45 @@ const fadeInUp = {
 };
 
 const staggerContainer = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
+  animate: { transition: { staggerChildren: 0.1 } },
 };
+
+const sponsorshipTiers = [
+  {
+    tier: "Bronze",
+    color: "from-orange-600 to-orange-400",
+    features: [
+      "Logo on event materials",
+      "Social media mentions",
+      "Event thank you",
+      "Digital presence",
+    ],
+  },
+  {
+    tier: "Silver",
+    color: "from-gray-400 to-gray-200",
+    features: [
+      "All Bronze benefits",
+      "Featured logo placement",
+      "Stage acknowledgment",
+      "Booth space available",
+      "Newsletter feature",
+    ],
+    featured: true,
+  },
+  {
+    tier: "Gold",
+    color: "from-yellow-600 to-yellow-400",
+    features: [
+      "All Silver benefits",
+      "Title sponsor rights",
+      "Premium booth space",
+      "Speaking opportunity",
+      "VIP event access",
+      "Year-long partnership",
+    ],
+  },
+];
 
 export default function SponsorsPage() {
   return (
@@ -172,42 +205,7 @@ export default function SponsorsPage() {
             variants={staggerContainer}
             className="grid md:grid-cols-3 gap-8"
           >
-            {[
-              {
-                tier: "Bronze",
-                color: "from-orange-600 to-orange-400",
-                features: [
-                  "Logo on event materials",
-                  "Social media mentions",
-                  "Event thank you",
-                  "Digital presence",
-                ],
-              },
-              {
-                tier: "Silver",
-                color: "from-gray-400 to-gray-200",
-                features: [
-                  "All Bronze benefits",
-                  "Featured logo placement",
-                  "Stage acknowledgment",
-                  "Booth space available",
-                  "Newsletter feature",
-                ],
-                featured: true,
-              },
-              {
-                tier: "Gold",
-                color: "from-yellow-600 to-yellow-400",
-                features: [
-                  "All Silver benefits",
-                  "Title sponsor rights",
-                  "Premium booth space",
-                  "Speaking opportunity",
-                  "VIP event access",
-                  "Year-long partnership",
-                ],
-              },
-            ].map((pkg, index) => (
+            {sponsorshipTiers.map((pkg, index) => (
               <motion.div
                 key={index}
                 variants={fadeInUp}
@@ -215,7 +213,7 @@ export default function SponsorsPage() {
                   pkg.featured
                     ? "border-primary bg-primary/5"
                     : "border-border bg-background/50"
-                } backdrop-blur relative overflow-hidden`}
+                } backdrop-blur relative overflow-hidden flex flex-col`}
               >
                 {pkg.featured && (
                   <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
@@ -227,7 +225,7 @@ export default function SponsorsPage() {
                 >
                   {pkg.tier}
                 </div>
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-3 mb-8 flex-grow">
                   {pkg.features.map((feature, idx) => (
                     <li
                       key={idx}
@@ -256,7 +254,7 @@ export default function SponsorsPage() {
           whileInView="animate"
           viewport={{ once: true }}
           variants={fadeInUp}
-          className="text-center p-12 rounded-3xl bg-gradient-to-br from-primary/10 via-background to-pink-500/10 border border-border"
+          className="text-center p-12 mb-8 rounded-3xl bg-gradient-to-br from-primary/10 via-background to-pink-500/10 border border-border"
         >
           <Mail className="w-16 h-16 text-primary mx-auto mb-6" />
           <h3 className="text-3xl font-bold mb-4">Interested in Sponsoring?</h3>

@@ -14,12 +14,14 @@ export function Footer() {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Simulate form submission - replace with actual API call
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -196,14 +198,22 @@ export function Footer() {
             <div className="grid grid-cols-2 gap-8">
               {footerLinks.map((section) => (
                 <div key={section.title}>
-                  <h4 className="font-semibold text-lg mb-4">{section.title}</h4>
+                  <h4 className="font-semibold text-lg mb-4">
+                    {section.title}
+                  </h4>
                   <ul className="space-y-2">
                     {section.links.map((link) => (
                       <li key={link.name}>
                         <Link
                           href={link.href}
-                          target={link.href.startsWith("http") ? "_blank" : undefined}
-                          rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                          target={
+                            link.href.startsWith("http") ? "_blank" : undefined
+                          }
+                          rel={
+                            link.href.startsWith("http")
+                              ? "noopener noreferrer"
+                              : undefined
+                          }
                           className="text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {link.name}
@@ -241,10 +251,16 @@ export function Footer() {
               © {new Date().getFullYear()} Atrangi Eventz. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <Link href="/events" className="hover:text-foreground transition-colors">
+              <Link
+                href="/events"
+                className="hover:text-foreground transition-colors"
+              >
                 Privacy Policy
               </Link>
-              <Link href="/events" className="hover:text-foreground transition-colors">
+              <Link
+                href="/events"
+                className="hover:text-foreground transition-colors"
+              >
                 Terms of Service
               </Link>
             </div>
@@ -254,4 +270,3 @@ export function Footer() {
     </footer>
   );
 }
-
