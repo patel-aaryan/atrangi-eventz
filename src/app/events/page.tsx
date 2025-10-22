@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Users, Clock } from "lucide-react";
 import Link from "next/link";
-import { EVENTS } from "@/lib/constants";
+import { EVENTS } from "@/constants/events";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },

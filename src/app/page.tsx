@@ -6,7 +6,7 @@ import { Calendar, Music, Sparkles, Users } from "lucide-react";
 import { FaInstagram, FaYoutube } from "react-icons/fa";
 import Link from "next/link";
 import { siteConfig } from "@/lib/metadata";
-import { EVENTS } from "@/lib/constants";
+import { EVENTS } from "@/constants/events";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
