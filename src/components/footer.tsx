@@ -3,8 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { FaInstagram, FaYoutube, FaTiktok } from "react-icons/fa";
-import { Mail, Send, MapPin, Phone } from "lucide-react";
+import { Mail, Send, MapPin } from "lucide-react";
 import { siteConfig } from "@/lib/metadata";
 
 export function Footer() {
@@ -18,6 +20,8 @@ export function Footer() {
     "idle" | "success" | "error"
   >("idle");
 
+  const email = process.env.NEXT_PUBLIC_EMAIL;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -28,7 +32,7 @@ export function Footer() {
       setSubmitStatus("success");
       setFormData({ name: "", email: "", message: "" });
       setTimeout(() => setSubmitStatus("idle"), 3000);
-    } catch (error) {
+    } catch {
       setSubmitStatus("error");
       setTimeout(() => setSubmitStatus("idle"), 3000);
     } finally {
@@ -66,30 +70,94 @@ export function Footer() {
     },
   ];
 
-  const footerLinks = [
-    {
-      title: "Quick Links",
-      links: [
-        { name: "Home", href: "/" },
-        { name: "About Us", href: "/#about" },
-        { name: "Events", href: "/events" },
-        { name: "Sponsors", href: "/sponsors" },
-      ],
-    },
-    {
-      title: "Connect",
-      links: [
-        { name: "Instagram", href: siteConfig.links.instagram },
-        { name: "YouTube", href: siteConfig.links.youtube },
-        { name: "TikTok", href: siteConfig.links.tiktok },
-      ],
-    },
-  ];
-
   return (
     <footer className="bg-card/50 border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+          {/* Info & Links Section */}
+          <div className="space-y-8">
+            {/* Brand */}
+            <div>
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent mb-4">
+                Atrangi Eventz
+              </h2>
+              <p className="text-muted-foreground mb-6">
+                Uniting Gujarati Students of Ontario through vibrant cultural
+                experiences, exciting events, and lasting connections.
+              </p>
+
+              {/* Social Links */}
+              <div className="flex gap-4">
+                {socialLinks.map((social) => (
+                  <Link
+                    key={social.name}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`p-3 rounded-full bg-background border border-border ${social.color} transition-all hover:scale-110`}
+                    aria-label={social.name}
+                  >
+                    <social.icon className="w-5 h-5" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Links & Contact Info */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              {/* Quick Links */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>
+                    <Link
+                      href="/"
+                      className="hover:text-foreground transition-colors"
+                    >
+                      Home
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/events"
+                      className="hover:text-foreground transition-colors"
+                    >
+                      Events
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/sponsors"
+                      className="hover:text-foreground transition-colors"
+                    >
+                      Sponsors
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Contact Info */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
+                <div className="space-y-3 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    <span>Ontario, Canada</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-primary" />
+                    <a
+                      href="mailto:contact@atrangieventz.com"
+                      className="hover:text-foreground transition-colors"
+                    >
+                      {email}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Contact Form Section */}
           <div>
             <div className="flex items-center gap-2 mb-6">
@@ -102,37 +170,33 @@ export function Footer() {
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <input
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
                   type="text"
                   name="name"
                   placeholder="Your Name"
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 />
-              </div>
-              <div>
-                <input
+                <Input
                   type="email"
                   name="email"
                   placeholder="Your Email"
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 />
               </div>
               <div>
-                <textarea
+                <Textarea
                   name="message"
                   placeholder="Your Message"
                   value={formData.message}
                   onChange={handleChange}
                   required
-                  rows={4}
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
+                  rows={6}
+                  className="resize-none min-h-32"
                 />
               </div>
 
@@ -164,84 +228,6 @@ export function Footer() {
               </Button>
             </form>
           </div>
-
-          {/* Info & Links Section */}
-          <div className="space-y-8">
-            {/* Brand */}
-            <div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent mb-4">
-                Atrangi Eventz
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                Uniting Gujarati Students of Ontario through vibrant cultural
-                experiences, exciting events, and lasting connections.
-              </p>
-
-              {/* Social Links */}
-              <div className="flex gap-4">
-                {socialLinks.map((social) => (
-                  <Link
-                    key={social.name}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`p-3 rounded-full bg-background border border-border ${social.color} transition-all hover:scale-110`}
-                    aria-label={social.name}
-                  >
-                    <social.icon className="w-5 h-5" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Footer Links */}
-            <div className="grid grid-cols-2 gap-8">
-              {footerLinks.map((section) => (
-                <div key={section.title}>
-                  <h4 className="font-semibold text-lg mb-4">
-                    {section.title}
-                  </h4>
-                  <ul className="space-y-2">
-                    {section.links.map((link) => (
-                      <li key={link.name}>
-                        <Link
-                          href={link.href}
-                          target={
-                            link.href.startsWith("http") ? "_blank" : undefined
-                          }
-                          rel={
-                            link.href.startsWith("http")
-                              ? "noopener noreferrer"
-                              : undefined
-                          }
-                          className="text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          {link.name}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            {/* Contact Info */}
-            <div className="space-y-3 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span>Ontario, Canada</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-primary" />
-                <a
-                  href="mailto:contact@atrangieventz.com"
-                  className="hover:text-foreground transition-colors"
-                >
-                  contact@atrangieventz.com
-                </a>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Bottom Bar */}
@@ -250,20 +236,6 @@ export function Footer() {
             <p>
               © {new Date().getFullYear()} Atrangi Eventz. All rights reserved.
             </p>
-            <div className="flex gap-6">
-              <Link
-                href="/events"
-                className="hover:text-foreground transition-colors"
-              >
-                Privacy Policy
-              </Link>
-              <Link
-                href="/events"
-                className="hover:text-foreground transition-colors"
-              >
-                Terms of Service
-              </Link>
-            </div>
           </div>
         </div>
       </div>

@@ -274,16 +274,6 @@ export default function Home() {
                 </motion.div>
               ))}
             </motion.div>
-
-            <motion.div variants={fadeInUp} className="text-center">
-              <Button
-                asChild
-                size="lg"
-                className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-pink-500 hover:opacity-90"
-              >
-                <Link href="#contact">Get Event Updates</Link>
-              </Button>
-            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -347,9 +337,6 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-
-      {/* Sponsors Anchor */}
-      <div id="sponsors" className="h-1" />
     </>
   );
 }
