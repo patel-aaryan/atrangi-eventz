@@ -33,9 +33,7 @@ export const authOptions: NextAuthOptions = {
 
           const user = result.rows[0];
 
-          if (!user || !user.password) {
-            return null;
-          }
+          if (!user || !user.password) return null;
 
           // Verify password
           const isValidPassword = await bcrypt.compare(
@@ -43,9 +41,7 @@ export const authOptions: NextAuthOptions = {
             user.password
           );
 
-          if (!isValidPassword) {
-            return null;
-          }
+          if (!isValidPassword) return null;
 
           // Return user object (without password)
           return {
@@ -72,15 +68,11 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
+      if (user) token.id = user.id;
       return token;
     },
     async session({ session, token }) {
-      if (session?.user) {
-        session.user.id = token.id as string;
-      }
+      if (session?.user) session.user.id = token.id as string;
       return session;
     },
   },
