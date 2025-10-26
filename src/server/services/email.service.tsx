@@ -1,4 +1,4 @@
-import mg from "../config/mailgun";
+import { mg } from "../config/mailgun";
 import { render } from "@react-email/render";
 import VerificationEmail from "../emails/VerificationEmail";
 import WelcomeEmail from "../emails/WelcomeEmail";
