@@ -86,13 +86,13 @@ export default function EventsPage() {
     selections: Record<string, number>,
     promoCode?: string
   ) => {
-    console.log("Proceeding to attendee info:", { selections, promoCode });
-    // TODO: Navigate to attendee-info page with selected tickets
-    // Pass eventId, selections, and promoCode to attendee-info page
+    console.log("Proceeding to checkout:", { selections, promoCode });
+    // TODO: Navigate to checkout page with selected tickets
+    // Pass eventId, selections, and promoCode to checkout page
     // Store in session storage or state management
     // sessionStorage.setItem('ticketSelections', JSON.stringify({ selections, promoCode, eventId }));
     setDrawerOpen(false);
-    router.push("/attendee-info");
+    router.push("/checkout");
   };
 
   return (

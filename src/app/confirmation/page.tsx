@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ProgressIndicator } from "@/components/checkout";
+import { ProgressIndicator } from "@/components/payment";
 import {
   SuccessHeader,
   OrderHeader,
