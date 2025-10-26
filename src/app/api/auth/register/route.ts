@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { pool } from "@/server/config/database";
+import { pool } from "@/server/config/postgres";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
