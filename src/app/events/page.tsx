@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Users, Clock } from "lucide-react";
 import Link from "next/link";
 import { EVENTS } from "@/constants/events";
+import { TicketSelectionDrawer } from "@/components/events/ticket-selection-drawer";
+import type { TicketType } from "@/types/checkout";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -21,6 +25,76 @@ const staggerContainer = {
 };
 
 export default function EventsPage() {
+  const router = useRouter();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<{
+    title: string;
+    date: string;
+    location: string;
+  } | null>(null);
+
+  // TODO: Replace with actual ticket types from API/database
+  // Should fetch ticket types based on selected event ID
+  // Example API call: GET /api/events/[eventId]/tickets
+  // Response should include: id, name, price, description, maxQuantity, available, features[]
+  const mockTicketTypes: TicketType[] = [
+    {
+      id: "general",
+      name: "General Admission",
+      price: 25.0,
+      description: "Standard entry with full event access",
+      maxQuantity: 10,
+      available: 150,
+      features: [
+        "Entry to event",
+        "Access to all areas",
+        "Complimentary welcome drink",
+      ],
+    },
+    {
+      id: "vip",
+      name: "VIP Pass",
+      price: 50.0,
+      description: "Premium experience with exclusive perks",
+      maxQuantity: 4,
+      available: 15,
+      features: [
+        "Priority entry",
+        "VIP lounge access",
+        "Reserved seating",
+        "Free welcome drinks",
+        "Event merchandise",
+      ],
+    },
+    {
+      id: "earlybird",
+      name: "Early Bird Special",
+      price: 20.0,
+      description: "Limited time discounted tickets",
+      maxQuantity: 10,
+      available: 5,
+      features: ["Entry to event", "Access to all areas", "10% discount"],
+    },
+  ];
+
+  const handleBuyTickets = (title: string, date: string, location: string) => {
+    setSelectedEvent({ title, date, location });
+    setDrawerOpen(true);
+  };
+
+  const handleProceedToCheckout = (
+    selections: Record<string, number>,
+    promoCode?: string
+  ) => {
+    console.log("Proceeding to attendee info:", { selections, promoCode });
+    // TODO: Navigate to attendee-info page with selected tickets
+    // Pass eventId, selections, and promoCode to attendee-info page
+    // Store in session storage or state management
+    // sessionStorage.setItem('ticketSelections', JSON.stringify({ selections, promoCode, eventId }));
+    setDrawerOpen(false);
+    router.push("/attendee-info");
+  };
+
   return (
     <section className="relative overflow-hidden pt-8">
       <div className="absolute inset-0 -z-10">
@@ -102,14 +176,18 @@ export default function EventsPage() {
           </motion.div>
 
           {/* Sample Event Cards */}
+          {/* TODO: Replace with actual upcoming events from database */}
+          {/* Should fetch from API: GET /api/events?status=upcoming */}
+          {/* Each event should include: id, title, date, location, capacity, ticketStatus, hasTicketsAvailable */}
           <motion.div variants={staggerContainer} className="space-y-6">
             {[
               {
                 title: "Bollywood Night 2025",
-                date: "Coming Soon",
-                location: "TBA",
+                date: "March 15, 2025 • 8:00 PM",
+                location: "Student Union Ballroom",
                 capacity: "500+ Students",
-                status: "Tickets Available Soon",
+                status: "Tickets Available",
+                available: true,
               },
               {
                 title: "Navratri Garba Night",
@@ -117,6 +195,7 @@ export default function EventsPage() {
                 location: "TBA",
                 capacity: "300+ Students",
                 status: "Save the Date",
+                available: false,
               },
             ].map((event, index) => (
               <motion.div
@@ -147,9 +226,24 @@ export default function EventsPage() {
                       <Clock className="w-4 h-4" />
                       {event.status}
                     </span>
-                    <Button variant="outline" disabled>
-                      Notify Me
-                    </Button>
+                    {event.available ? (
+                      <Button
+                        onClick={() =>
+                          handleBuyTickets(
+                            event.title,
+                            event.date,
+                            event.location
+                          )
+                        }
+                        className="bg-gradient-to-r from-primary to-pink-500 hover:opacity-90"
+                      >
+                        Buy Tickets
+                      </Button>
+                    ) : (
+                      <Button variant="outline" disabled>
+                        Notify Me
+                      </Button>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -181,6 +275,19 @@ export default function EventsPage() {
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Ticket Selection Drawer */}
+      {selectedEvent && (
+        <TicketSelectionDrawer
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          eventTitle={selectedEvent.title}
+          eventDate={selectedEvent.date}
+          eventLocation={selectedEvent.location}
+          ticketTypes={mockTicketTypes}
+          onProceedToCheckout={handleProceedToCheckout}
+        />
+      )}
     </section>
   );
 }
