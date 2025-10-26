@@ -90,7 +90,7 @@ export function Navbar() {
                 asChild
                 className="bg-gradient-to-r from-primary to-pink-500 hover:opacity-90"
               >
-                <Link href="#contact">Get Tickets</Link>
+                <Link href="/tickets">Get Tickets</Link>
               </Button>
             </motion.div>
           </motion.div>
@@ -131,7 +131,7 @@ export function Navbar() {
                     asChild
                     className="w-full bg-gradient-to-r from-primary to-pink-500 hover:opacity-90 mt-4"
                   >
-                    <Link href="#contact" onClick={() => setIsOpen(false)}>
+                    <Link href="/tickets" onClick={() => setIsOpen(false)}>
                       Get Tickets
                     </Link>
                   </Button>

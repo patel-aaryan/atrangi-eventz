@@ -1,10 +1,13 @@
 import Mailgun from "mailgun.js";
 import FormData from "form-data";
 
-const mailgun = new Mailgun(FormData);
-const mg = mailgun.client({
-  username: "api",
-  key: process.env.MAILGUN_API_KEY || "",
-});
+if (!process.env.MAILGUN_API_KEY) {
+  throw new Error("MAILGUN_API_KEY environment variable is not set");
+}
 
-export default mg;
+const mailgun = new Mailgun(FormData);
+
+export const mg = mailgun.client({
+  username: "api",
+  key: process.env.MAILGUN_API_KEY,
+});
