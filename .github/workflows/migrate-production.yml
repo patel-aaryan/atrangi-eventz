@@ -12,7 +12,8 @@ on:
       - main
     paths:
       - "migrations/**"
-      - "scripts/migrate.mjs"
+      - "database.json"
+      - "scripts/migrate.js"
 
 jobs:
   migrate:
@@ -37,6 +38,7 @@ jobs:
 
       - name: Run migrations
         env:
+          NODE_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           CI: true
         run: npm run migrate

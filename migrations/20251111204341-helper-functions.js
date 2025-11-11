@@ -1,0 +1,53 @@
+'use strict';
+
+let dbm;
+let type;
+let seed;
+const fs = require('node:fs');
+const path = require('node:path');
+let PromiseImpl;
+
+/**
+  * We receive the dbmigrate dependency from dbmigrate initially.
+  * This enables us to not have to rely on NODE_PATH.
+  */
+exports.setup = function(options, seedLink) {
+  dbm = options.dbmigrate;
+  type = dbm.dataType;
+  seed = seedLink;
+  PromiseImpl = options.Promise;
+};
+
+exports.up = function(db) {
+  const filePath = path.join(__dirname, 'sqls', '20251111204341-helper-functions-up.sql');
+  return new PromiseImpl( function( resolve, reject ) {
+    fs.readFile(filePath, {encoding: 'utf-8'}, function(err,data){
+      if (err) return reject(err);
+      console.log('received data: ' + data);
+
+      resolve(data);
+    });
+  })
+  .then(function(data) {
+    return db.runSql(data);
+  });
+};
+
+exports.down = function(db) {
+  const filePath = path.join(__dirname, 'sqls', '20251111204341-helper-functions-down.sql');
+  return new PromiseImpl( function( resolve, reject ) {
+    fs.readFile(filePath, {encoding: 'utf-8'}, function(err,data){
+      if (err) return reject(err);
+      console.log('received data: ' + data);
+
+      resolve(data);
+    });
+  })
+  .then(function(data) {
+    return db.runSql(data);
+  });
+};
+
+exports._meta = {
+  "version": 1
+};
