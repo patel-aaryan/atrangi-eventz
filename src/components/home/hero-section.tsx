@@ -12,7 +12,10 @@ interface HeroSectionProps {
   staggerContainer: Variants;
 }
 
-export function HeroSection({ fadeInUp, staggerContainer }: HeroSectionProps) {
+export function HeroSection({
+  fadeInUp,
+  staggerContainer,
+}: Readonly<HeroSectionProps>) {
   return (
     <section
       id="home"

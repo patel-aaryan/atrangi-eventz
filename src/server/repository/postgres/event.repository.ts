@@ -1,0 +1,58 @@
+import { pool } from "@/server/config/postgres";
+import type { PastEventListItem } from "@/types/event";
+
+/**
+ * Event Repository - Handles all database operations for events
+ */
+export class EventRepository {
+  /**
+   * Find past published events for showcase
+   * Only queries essential data: title, date, attendance, location, and image
+   */
+  async findPast(): Promise<PastEventListItem[]> {
+    const query = `
+      SELECT 
+        id, 
+        title, 
+        slug, 
+        description,
+        start_date, 
+        end_date,
+        venue_name, 
+        venue_city,
+        total_tickets_sold,
+        thumbnail_image
+      FROM events
+      WHERE status = 'completed' 
+        AND is_public = true
+        AND start_date < CURRENT_TIMESTAMP
+      ORDER BY start_date DESC
+    `;
+
+    const result = await pool.query(query);
+
+    return result.rows.map((row) => this.mapRowToPastEventListItem(row));
+  }
+
+  /**
+   * Map database row to PastEventListItem object
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private mapRowToPastEventListItem(row: any): PastEventListItem {
+    return {
+      id: row.id,
+      title: row.title,
+      slug: row.slug,
+      description: row.description,
+      start_date: row.start_date?.toISOString() || row.start_date,
+      end_date: row.end_date?.toISOString() || row.end_date,
+      venue_name: row.venue_name,
+      venue_city: row.venue_city,
+      total_tickets_sold: row.total_tickets_sold || 0,
+      thumbnail_image: row.thumbnail_image,
+    };
+  }
+}
+
+// Export a singleton instance
+export const eventRepository = new EventRepository();

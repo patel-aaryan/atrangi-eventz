@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Music, Users } from "lucide-react";
 
 interface AboutSectionProps {
@@ -62,14 +63,18 @@ export function AboutSection({
             className="grid md:grid-cols-3 gap-8"
           >
             {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                variants={fadeInUp}
-                className="p-8 rounded-2xl bg-background/50 backdrop-blur border border-border hover:border-primary/50 transition-colors group"
-              >
-                <feature.icon className="w-12 h-12 text-primary mb-4 group-hover:scale-110 transition-transform" />
-                <h3 className="text-2xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+              <motion.div key={index} variants={fadeInUp}>
+                <Card className="h-full bg-background/50 backdrop-blur hover:border-primary/50 transition-colors group">
+                  <CardContent className="p-8">
+                    <feature.icon className="w-12 h-12 text-primary mb-4 group-hover:scale-110 transition-transform" />
+                    <h3 className="text-2xl font-semibold mb-3">
+                      {feature.title}
+                    </h3>
+                    <p className="text-muted-foreground">
+                      {feature.description}
+                    </p>
+                  </CardContent>
+                </Card>
               </motion.div>
             ))}
           </motion.div>

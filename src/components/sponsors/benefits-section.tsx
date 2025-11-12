@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
 import { Handshake, TrendingUp, Users, Award } from "lucide-react";
 
 interface BenefitsSectionProps {
@@ -62,16 +63,16 @@ export function BenefitsSection({
         className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
       >
         {benefits.map((benefit, index) => (
-          <motion.div
-            key={index}
-            variants={fadeInUp}
-            className="p-6 rounded-xl bg-background/50 backdrop-blur border border-border hover:border-primary/50 transition-colors text-center"
-          >
-            <benefit.icon className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">{benefit.title}</h3>
-            <p className="text-sm text-muted-foreground">
-              {benefit.description}
-            </p>
+          <motion.div key={index} variants={fadeInUp}>
+            <Card className="bg-background/50 backdrop-blur hover:border-primary/50 transition-colors">
+              <CardContent className="p-6 text-center">
+                <benefit.icon className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">{benefit.title}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {benefit.description}
+                </p>
+              </CardContent>
+            </Card>
           </motion.div>
         ))}
       </motion.div>
