@@ -7,7 +7,10 @@ interface HeroSectionProps {
   staggerContainer: Variants;
 }
 
-export function HeroSection({ fadeInUp, staggerContainer }: HeroSectionProps) {
+export function HeroSection({
+  fadeInUp,
+  staggerContainer,
+}: Readonly<HeroSectionProps>) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <motion.div

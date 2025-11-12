@@ -49,7 +49,7 @@ const sponsorshipTiers = [
 export function TiersSection({
   fadeInUp,
   staggerContainer,
-}: TiersSectionProps) {
+}: Readonly<TiersSectionProps>) {
   return (
     <motion.div
       initial="initial"

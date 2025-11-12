@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
 import { EVENTS } from "@/constants/events";
 
 interface EventsSectionProps {
@@ -11,7 +12,7 @@ interface EventsSectionProps {
 export function EventsSection({
   fadeInUp,
   staggerContainer,
-}: EventsSectionProps) {
+}: Readonly<EventsSectionProps>) {
   return (
     <section id="events" className="py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,16 +45,20 @@ export function EventsSection({
                 key={index}
                 variants={fadeInUp}
                 whileHover={{ scale: 1.03 }}
-                className="relative p-8 rounded-2xl bg-background/50 backdrop-blur border border-border overflow-hidden group cursor-pointer"
+                className="h-full"
               >
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${event.gradient} opacity-0 group-hover:opacity-10 transition-opacity`}
-                />
-                <div className="relative z-10">
-                  <div className="text-5xl mb-4">{event.emoji}</div>
-                  <h3 className="text-2xl font-semibold mb-3">{event.title}</h3>
-                  <p className="text-muted-foreground">{event.description}</p>
-                </div>
+                <Card className="h-full relative overflow-hidden group cursor-pointer bg-background/50 backdrop-blur transition-colors">
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${event.gradient} opacity-0 group-hover:opacity-10 transition-opacity`}
+                  />
+                  <CardContent className="relative z-10 p-8">
+                    <div className="text-5xl mb-4">{event.emoji}</div>
+                    <h3 className="text-2xl font-semibold mb-3">
+                      {event.title}
+                    </h3>
+                    <p className="text-muted-foreground">{event.description}</p>
+                  </CardContent>
+                </Card>
               </motion.div>
             ))}
           </motion.div>

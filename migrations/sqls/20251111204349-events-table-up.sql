@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS events (
     total_tickets_sold INTEGER DEFAULT 0,
     currency VARCHAR(3) DEFAULT 'CAD',
     total_revenue DECIMAL(12, 2) DEFAULT 0.00,
+    num_sponsors INTEGER DEFAULT 0,
+    num_volunteers INTEGER DEFAULT 0,
     
     -- Ticket tiers (JSONB for flexibility)
     ticket_tiers JSONB DEFAULT '[]'::jsonb,
@@ -41,7 +43,6 @@ CREATE TABLE IF NOT EXISTS events (
     -- Computed fields (PostgreSQL GENERATED columns)
     tickets_remaining INTEGER GENERATED ALWAYS AS (GREATEST(0, total_capacity - total_tickets_sold)) STORED,
     is_sold_out BOOLEAN GENERATED ALWAYS AS (total_tickets_sold >= total_capacity) STORED,
-    is_past BOOLEAN GENERATED ALWAYS AS (end_date < CURRENT_TIMESTAMP) STORED,
     
     -- Media
     banner_image TEXT,

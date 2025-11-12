@@ -6,7 +6,7 @@ import { Mail } from "lucide-react";
 import Link from "next/link";
 
 interface ContactCTASectionProps {
-  fadeInUp: Variants;
+  readonly fadeInUp: Variants;
 }
 
 export function ContactCTASection({ fadeInUp }: ContactCTASectionProps) {

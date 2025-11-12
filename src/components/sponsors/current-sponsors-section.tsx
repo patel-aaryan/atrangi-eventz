@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface CurrentSponsorsSectionProps {
   fadeInUp: Variants;
@@ -10,7 +11,7 @@ interface CurrentSponsorsSectionProps {
 export function CurrentSponsorsSection({
   fadeInUp,
   staggerContainer,
-}: CurrentSponsorsSectionProps) {
+}: Readonly<CurrentSponsorsSectionProps>) {
   return (
     <motion.div
       initial="initial"
@@ -31,15 +32,15 @@ export function CurrentSponsorsSection({
           mission.
         </p>
       </motion.div>
-
-      <motion.div
-        variants={fadeInUp}
-        className="p-12 rounded-2xl bg-background/50 backdrop-blur border border-border text-center"
-      >
-        <p className="text-xl text-muted-foreground">
-          Our sponsor showcase will be updated soon. We&apos;re actively seeking
-          partnerships for our upcoming events.
-        </p>
+      <motion.div variants={fadeInUp}>
+        <Card className="bg-background/50 backdrop-blur">
+          <CardContent className="p-12 text-center">
+            <p className="text-xl text-muted-foreground">
+              Our sponsor showcase will be updated soon. We&apos;re actively
+              seeking partnerships for our upcoming events.
+            </p>
+          </CardContent>
+        </Card>
       </motion.div>
     </motion.div>
   );
