@@ -1,8 +1,6 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -51,7 +49,7 @@ const sponsorshipTiers = [
 export function TiersSection({
   fadeInUp,
   staggerContainer,
-}: TiersSectionProps) {
+}: Readonly<TiersSectionProps>) {
   return (
     <motion.div
       initial="initial"
@@ -77,43 +75,43 @@ export function TiersSection({
         className="grid md:grid-cols-3 gap-8"
       >
         {sponsorshipTiers.map((pkg, index) => (
-          <motion.div key={index} variants={fadeInUp} className="h-full">
-            <Card
-              className={`h-full ${
-                pkg.featured
-                  ? "border-2 border-primary bg-primary/5"
-                  : "border-2 bg-background/50"
-              } backdrop-blur relative overflow-hidden flex flex-col`}
+          <motion.div
+            key={index}
+            variants={fadeInUp}
+            className={`p-8 rounded-2xl border-2 ${
+              pkg.featured
+                ? "border-primary bg-primary/5"
+                : "border-border bg-background/50"
+            } backdrop-blur relative overflow-hidden flex flex-col`}
+          >
+            {pkg.featured && (
+              <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+                Popular
+              </div>
+            )}
+            <div
+              className={`inline-block px-4 py-2 rounded-lg bg-gradient-to-r ${pkg.color} text-white font-bold text-lg mb-6`}
             >
-              {pkg.featured && (
-                <Badge className="absolute top-4 right-4">Popular</Badge>
-              )}
-              <CardContent className="p-8 flex flex-col h-full">
-                <div
-                  className={`inline-block px-4 py-2 rounded-lg bg-gradient-to-r ${pkg.color} text-white font-bold text-lg mb-6 self-start`}
+              {pkg.tier}
+            </div>
+            <ul className="space-y-3 mb-8 flex-grow">
+              {pkg.features.map((feature, idx) => (
+                <li
+                  key={idx}
+                  className="flex items-start gap-2 text-sm text-foreground/80"
                 >
-                  {pkg.tier}
-                </div>
-                <ul className="space-y-3 mb-8 flex-grow">
-                  {pkg.features.map((feature, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-start gap-2 text-sm text-foreground/80"
-                    >
-                      <span className="text-primary text-lg">✓</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  variant={pkg.featured ? "default" : "outline"}
-                  className="w-full"
-                  asChild
-                >
-                  <Link href="#contact">Get Started</Link>
-                </Button>
-              </CardContent>
-            </Card>
+                  <span className="text-primary text-lg">✓</span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            <Button
+              variant={pkg.featured ? "default" : "outline"}
+              className="w-full"
+              asChild
+            >
+              <Link href="#contact">Get Started</Link>
+            </Button>
           </motion.div>
         ))}
       </motion.div>

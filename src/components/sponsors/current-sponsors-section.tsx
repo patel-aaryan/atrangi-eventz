@@ -11,7 +11,7 @@ interface CurrentSponsorsSectionProps {
 export function CurrentSponsorsSection({
   fadeInUp,
   staggerContainer,
-}: CurrentSponsorsSectionProps) {
+}: Readonly<CurrentSponsorsSectionProps>) {
   return (
     <motion.div
       initial="initial"
@@ -32,7 +32,6 @@ export function CurrentSponsorsSection({
           mission.
         </p>
       </motion.div>
-
       <motion.div variants={fadeInUp}>
         <Card className="bg-background/50 backdrop-blur">
           <CardContent className="p-12 text-center">

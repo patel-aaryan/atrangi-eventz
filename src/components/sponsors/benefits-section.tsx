@@ -37,7 +37,7 @@ const benefits = [
 export function BenefitsSection({
   fadeInUp,
   staggerContainer,
-}: BenefitsSectionProps) {
+}: Readonly<BenefitsSectionProps>) {
   return (
     <motion.div
       initial="initial"

@@ -4,7 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -91,7 +97,9 @@ export default function SignUpPage() {
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <Card className="max-w-md w-full">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-3xl font-bold">Create your account</CardTitle>
+          <CardTitle className="text-3xl font-bold">
+            Create your account
+          </CardTitle>
           <CardDescription>
             Or{" "}
             <Link
