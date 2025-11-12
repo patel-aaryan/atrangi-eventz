@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS events (
     total_tickets_sold INTEGER DEFAULT 0,
     currency VARCHAR(3) DEFAULT 'CAD',
     total_revenue DECIMAL(12, 2) DEFAULT 0.00,
+    num_sponsors INTEGER DEFAULT 0,
+    num_volunteers INTEGER DEFAULT 0,
     
     -- Ticket tiers (JSONB for flexibility)
     ticket_tiers JSONB DEFAULT '[]'::jsonb,

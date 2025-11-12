@@ -1,7 +1,8 @@
 "use client";
 
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Calendar, MapPin, Users } from "lucide-react";
+import { Calendar, MapPin, Users, Clock } from "lucide-react";
+import { motion } from "framer-motion";
 import type { PastEventListItem } from "@/types/event";
 
 interface EventCardProps {
@@ -9,10 +10,14 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: Readonly<EventCardProps>) {
-  const formattedDate = new Date(event.start_date).toLocaleDateString("en-US", {
+  const startDate = new Date(event.start_date);
+  const formattedDate = startDate.toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
+  });
+
+  const formattedTime = startDate.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
@@ -20,39 +25,93 @@ export function EventCard({ event }: Readonly<EventCardProps>) {
 
   const location = event.venue_name || event.venue_city || "TBA";
   const attendees = event.total_tickets_sold
-    ? `${event.total_tickets_sold.toLocaleString()} Attendees`
-    : "No attendance data";
+    ? `${event.total_tickets_sold.toLocaleString()}`
+    : "0";
 
   return (
-    <div>
-      <Card className="hover:border-primary/50 transition-colors">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="space-y-3 flex-1">
-              <CardTitle className="text-2xl">{event.title}</CardTitle>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      whileHover={{ y: -4 }}
+      className="h-full"
+    >
+      <Card className="group relative overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 h-full">
+        {/* Gradient Background Accent */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        <CardContent className="p-6 relative mx-4">
+          <div className="space-y-4">
+            {/* Title Section */}
+            <div className="space-y-2 pr-24">
+              <CardTitle className="text-2xl md:text-3xl font-bold leading-tight group-hover:text-primary transition-colors">
+                {event.title}
+              </CardTitle>
               {event.description && (
-                <p className="text-muted-foreground line-clamp-2">
+                <p className="text-muted-foreground line-clamp-2 text-sm md:text-base">
                   {event.description}
                 </p>
               )}
-              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>{formattedDate}</span>
+            </div>
+
+            {/* Stats Section */}
+            <div className="flex items-center gap-6 pt-2">
+              <div className="flex items-center gap-2 text-foreground/80">
+                <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <Users className="w-4 h-4 text-primary" />
                 </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  <span>{location}</span>
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">
+                    Attendees
+                  </span>
+                  <span className="font-semibold text-sm">{attendees}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  <span>{attendees}</span>
+              </div>
+            </div>
+
+            {/* Info Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-border/50">
+              <div className="flex items-center gap-3 text-sm">
+                <div className="p-1.5 rounded-md bg-muted">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">Date</span>
+                  <span className="font-medium text-foreground">
+                    {formattedDate}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 text-sm">
+                <div className="p-1.5 rounded-md bg-muted">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">Time</span>
+                  <span className="font-medium text-foreground">
+                    {formattedTime}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 text-sm">
+                <div className="p-1.5 rounded-md bg-muted">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">
+                    Location
+                  </span>
+                  <span className="font-medium text-foreground">
+                    {location}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
