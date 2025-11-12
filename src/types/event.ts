@@ -98,5 +98,7 @@ export interface PastEventListItem {
   venue_name: string | null;
   venue_city: string | null;
   total_tickets_sold: number;
+  num_sponsors: number;
+  num_volunteers: number;
   thumbnail_image: string | null;
 }

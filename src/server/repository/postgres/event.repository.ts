@@ -7,7 +7,7 @@ import type { PastEventListItem } from "@/types/event";
 export class EventRepository {
   /**
    * Find past published events for showcase
-   * Only queries essential data: title, date, attendance, location, and image
+   * Only queries essential data: title, date, attendance, sponsors, volunteers, location, and image
    */
   async findPast(): Promise<PastEventListItem[]> {
     const query = `
@@ -21,6 +21,8 @@ export class EventRepository {
         venue_name, 
         venue_city,
         total_tickets_sold,
+        num_sponsors,
+        num_volunteers,
         thumbnail_image
       FROM events
       WHERE status = 'completed' 
@@ -49,6 +51,8 @@ export class EventRepository {
       venue_name: row.venue_name,
       venue_city: row.venue_city,
       total_tickets_sold: row.total_tickets_sold || 0,
+      num_sponsors: row.num_sponsors || 0,
+      num_volunteers: row.num_volunteers || 0,
       thumbnail_image: row.thumbnail_image,
     };
   }

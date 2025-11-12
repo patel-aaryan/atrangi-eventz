@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Calendar, MapPin, Users, Clock } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Award, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import type { PastEventListItem } from "@/types/event";
 
@@ -26,6 +26,12 @@ export function EventCard({ event }: Readonly<EventCardProps>) {
   const location = event.venue_name || event.venue_city || "TBA";
   const attendees = event.total_tickets_sold
     ? `${event.total_tickets_sold.toLocaleString()}`
+    : "0";
+  const sponsors = event.num_sponsors
+    ? `${event.num_sponsors.toLocaleString()}`
+    : "0";
+  const volunteers = event.num_volunteers
+    ? `${event.num_volunteers.toLocaleString()}`
     : "0";
 
   return (
@@ -55,8 +61,8 @@ export function EventCard({ event }: Readonly<EventCardProps>) {
             </div>
 
             {/* Stats Section */}
-            <div className="flex items-center gap-6 pt-2">
-              <div className="flex items-center gap-2 text-foreground/80">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+              <div className="flex items-center gap-3 text-sm">
                 <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
                   <Users className="w-4 h-4 text-primary" />
                 </div>
@@ -65,6 +71,30 @@ export function EventCard({ event }: Readonly<EventCardProps>) {
                     Attendees
                   </span>
                   <span className="font-semibold text-sm">{attendees}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 text-sm">
+                <div className="p-2 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
+                  <Award className="w-4 h-4 text-blue-500" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">
+                    Sponsors
+                  </span>
+                  <span className="font-semibold text-sm">{sponsors}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 text-sm">
+                <div className="p-2 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
+                  <Heart className="w-4 h-4 text-green-500" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">
+                    Volunteers
+                  </span>
+                  <span className="font-semibold text-sm">{volunteers}</span>
                 </div>
               </div>
             </div>
