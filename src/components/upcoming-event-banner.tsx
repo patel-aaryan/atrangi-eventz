@@ -169,9 +169,9 @@ export function UpcomingEventBanner() {
               <X className="h-5 w-5" />
             </Button>
 
-            <div className="flex flex-col gap-3 py-4 pr-12 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:py-4">
+            <div className="flex flex-col gap-3 py-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6 lg:py-4">
               {/* Left Section: Icon + Event Details */}
-              <div className="flex flex-1 gap-3 lg:gap-4">
+              <div className="flex flex-1 gap-3 pr-12 lg:gap-4 lg:pr-0">
                 {/* Icon */}
                 <motion.div
                   animate={{
@@ -213,42 +213,42 @@ export function UpcomingEventBanner() {
                     </p>
                   )}
 
-                  {/* Info Grid */}
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                  {/* Info Grid - 2x2 on mobile */}
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     {/* Date */}
-                    <div className="flex items-center gap-2 text-sm text-white/90">
-                      <Calendar className="h-4 w-4 flex-shrink-0" />
-                      <div className="flex flex-col">
+                    <div className="flex items-start gap-2 text-sm text-white/90">
+                      <Calendar className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                      <div className="flex flex-col min-w-0">
                         <span className="text-xs font-medium text-white/70">
                           Date
                         </span>
-                        <span className="font-medium text-white">
+                        <span className="font-medium text-white text-xs lg:text-sm truncate">
                           {formattedDate}
                         </span>
                       </div>
                     </div>
 
                     {/* Time */}
-                    <div className="flex items-center gap-2 text-sm text-white/90">
-                      <Clock className="h-4 w-4 flex-shrink-0" />
-                      <div className="flex flex-col">
+                    <div className="flex items-start gap-2 text-sm text-white/90">
+                      <Clock className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                      <div className="flex flex-col min-w-0">
                         <span className="text-xs font-medium text-white/70">
                           Time
                         </span>
-                        <span className="font-medium text-white">
+                        <span className="font-medium text-white text-xs lg:text-sm">
                           {formattedTime}
                         </span>
                       </div>
                     </div>
 
                     {/* Location */}
-                    <div className="flex items-center gap-2 text-sm text-white/90">
-                      <MapPin className="h-4 w-4 flex-shrink-0" />
-                      <div className="flex flex-col">
+                    <div className="flex items-start gap-2 text-sm text-white/90">
+                      <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                      <div className="flex flex-col min-w-0">
                         <span className="text-xs font-medium text-white/70">
                           Location
                         </span>
-                        <span className="font-medium text-white">
+                        <span className="font-medium text-white text-xs lg:text-sm truncate">
                           {event.venue_name || event.venue_city}
                         </span>
                       </div>
@@ -256,13 +256,13 @@ export function UpcomingEventBanner() {
 
                     {/* Tickets */}
                     {!event.is_sold_out && (
-                      <div className="flex items-center gap-2 text-sm text-white/90">
-                        <Users className="h-4 w-4 flex-shrink-0" />
-                        <div className="flex flex-col">
+                      <div className="flex items-start gap-2 text-sm text-white/90">
+                        <Users className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                        <div className="flex flex-col min-w-0">
                           <span className="text-xs font-medium text-white/70">
                             Tickets Left
                           </span>
-                          <span className="font-medium text-white">
+                          <span className="font-medium text-white text-xs lg:text-sm">
                             {ticketsRemaining} / {totalCapacity}
                           </span>
                         </div>
