@@ -65,28 +65,6 @@ export interface Event {
   updated_at: string;
 }
 
-// Simplified event type for list views
-export interface EventListItem {
-  id: string;
-  title: string;
-  slug: string;
-  description: string | null;
-  start_date: string;
-  end_date: string;
-  venue_name: string | null;
-  venue_city: string | null;
-  total_capacity: number | null;
-  total_tickets_sold: number;
-  tickets_remaining: number;
-  is_sold_out: boolean;
-  ticket_tiers: TicketTier[];
-  thumbnail_image: string | null;
-  status: EventStatus;
-  is_featured: boolean;
-  ticket_sales_open: string | null;
-  ticket_sales_close: string | null;
-}
-
 // Simplified type for showcasing past events
 export interface PastEventListItem {
   id: string;
@@ -101,4 +79,24 @@ export interface PastEventListItem {
   num_sponsors: number;
   num_volunteers: number;
   thumbnail_image: string | null;
+}
+
+// Simplified type for upcoming event
+export interface UpcomingEventItem {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  start_date: string;
+  end_date: string;
+  venue_name: string | null;
+  venue_city: string | null;
+  total_capacity: number | null;
+  total_tickets_sold: number;
+  tickets_remaining: number;
+  is_sold_out: boolean;
+  ticket_sales_open: string | null;
+  ticket_sales_close: string | null;
+  thumbnail_image: string | null;
+  banner_image: string | null;
 }
