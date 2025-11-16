@@ -18,6 +18,8 @@ interface UpcomingEventResponse {
  * Fetch past events for showcase
  */
 export async function getPastEvents(): Promise<PastEventListItem[]> {
+  console.log("🔍 [API] Fetching past events from server...");
+
   const response = await fetch("/api/events/past", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
@@ -31,6 +33,9 @@ export async function getPastEvents(): Promise<PastEventListItem[]> {
   }
 
   const data: PastEventsResponse = await response.json();
+  console.log(
+    `✅ [API] Past events fetched successfully (${data.events.length} events)`
+  );
   return data.events;
 }
 

@@ -6,6 +6,7 @@ import { Footer } from "@/components/footer";
 import { UpcomingEventBanner } from "@/components/upcoming-event-banner";
 import { generateSEOMetadata } from "@/lib/metadata";
 import { AuthProvider } from "@/providers/auth-provider";
+import { QueryProvider } from "@/providers/query-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,12 +30,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <Navbar />
-          <UpcomingEventBanner />
-          <main>{children}</main>
-          <Footer />
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <Navbar />
+            <UpcomingEventBanner />
+            <main>{children}</main>
+            <Footer />
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

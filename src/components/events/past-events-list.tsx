@@ -1,40 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Calendar } from "lucide-react";
 import { getPastEvents } from "@/lib/api/events";
-import type { PastEventListItem } from "@/types/event";
 import { EventCard } from "./event-card";
 
 export function PastEventsList() {
-  const [pastEvents, setPastEvents] = useState<PastEventListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchEvents() {
-      try {
-        setLoading(true);
-        const events = await getPastEvents();
-        setPastEvents(events);
-        setError(null);
-      } catch (err) {
-        console.error("Failed to fetch past events:", err);
-        setError("Failed to load past events. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchEvents();
-  }, []);
+  // Use React Query for caching
+  const {
+    data: pastEvents = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["past-events"],
+    queryFn: getPastEvents,
+    staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
+    refetchOnWindowFocus: false, // Don't refetch when user returns to tab
+  });
 
   return (
     <div className="space-y-12">
-      {loading && (
+      {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i}>
@@ -60,12 +49,16 @@ export function PastEventsList() {
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>
+              {error instanceof Error
+                ? error.message
+                : "Failed to load past events. Please try again later."}
+            </AlertDescription>
           </Alert>
         </div>
       )}
 
-      {!loading && !error && pastEvents.length === 0 && (
+      {!isLoading && !error && pastEvents.length === 0 && (
         <div>
           <Card>
             <CardContent className="p-12 text-center">
@@ -79,7 +72,7 @@ export function PastEventsList() {
         </div>
       )}
 
-      {!loading && !error && pastEvents.length > 0 && (
+      {!isLoading && !error && pastEvents.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {pastEvents.map((event) => (
             <EventCard key={event.id} event={event} />

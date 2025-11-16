@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import {
   X,
   Ticket,
@@ -15,29 +16,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getUpcomingEvent } from "@/lib/api/events";
-import type { UpcomingEventItem } from "@/types/event";
 
 export function UpcomingEventBanner() {
-  const [event, setEvent] = useState<UpcomingEventItem | null>(null);
   const [isDismissed, setIsDismissed] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [timeUntil, setTimeUntil] = useState("");
 
-  useEffect(() => {
-    // Fetch upcoming event
-    const fetchEvent = async () => {
-      try {
-        const upcomingEvent = await getUpcomingEvent();
-        setEvent(upcomingEvent);
-      } catch (error) {
-        console.error("Error fetching upcoming event:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchEvent();
-  }, []);
+  // Use React Query for caching
+  const { data: event, isLoading } = useQuery({
+    queryKey: ["upcoming-event"],
+    queryFn: getUpcomingEvent,
+    staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
+    refetchOnWindowFocus: false, // Don't refetch when user returns to tab
+  });
 
   useEffect(() => {
     if (!event) return;

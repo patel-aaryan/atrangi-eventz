@@ -124,6 +124,3 @@ export class EventRepository {
     };
   }
 }
-
-// Export a singleton instance
-export const eventRepository = new EventRepository();
