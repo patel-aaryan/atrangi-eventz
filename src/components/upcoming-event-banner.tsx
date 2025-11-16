@@ -155,7 +155,7 @@ export function UpcomingEventBanner() {
             }}
           />
 
-          <div className="container relative mx-auto px-4">
+          <div className="relative mx-auto px-4 sm:px-6 lg:px-12">
             {/* Dismiss Button - Top Right */}
             <Button
               size="icon"
