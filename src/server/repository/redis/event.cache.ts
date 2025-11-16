@@ -9,7 +9,7 @@ export class EventCache {
   private readonly PAST_EVENTS_CACHE_KEY = "past-events";
   private readonly UPCOMING_EVENT_CACHE_TTL = 86400; // 1 day in seconds
   private readonly NO_EVENT_CACHE_TTL = 21600; // 6 hours in seconds
-  private readonly PAST_EVENTS_CACHE_TTL = 3600; // 1 hour in seconds
+  private readonly PAST_EVENTS_CACHE_TTL = 86400; // 1 day in seconds
   private readonly NO_EVENT_MARKER = "__NO_EVENT__"; // Special marker for null results
 
   /**
