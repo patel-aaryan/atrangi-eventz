@@ -3,8 +3,11 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { UpcomingEventBanner } from "@/components/upcoming-event-banner";
 import { generateSEOMetadata } from "@/lib/metadata";
 import { AuthProvider } from "@/providers/auth-provider";
+import { QueryProvider } from "@/providers/query-provider";
+import { TicketProvider } from "@/contexts/ticket-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,11 +31,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <TicketProvider>
+              <Navbar />
+              <UpcomingEventBanner />
+              <main>{children}</main>
+              <Footer />
+            </TicketProvider>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );
