@@ -27,7 +27,7 @@ export function PaymentForm({
   onSubmit,
   onBack,
   isSubmitting = false,
-}: PaymentFormProps) {
+}: Readonly<PaymentFormProps>) {
   const [formData, setFormData] = useState<PaymentFormData>({
     cardNumber: "",
     cardExpiry: "",
