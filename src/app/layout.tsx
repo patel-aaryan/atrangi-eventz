@@ -7,6 +7,7 @@ import { UpcomingEventBanner } from "@/components/upcoming-event-banner";
 import { generateSEOMetadata } from "@/lib/metadata";
 import { AuthProvider } from "@/providers/auth-provider";
 import { QueryProvider } from "@/providers/query-provider";
+import { TicketProvider } from "@/contexts/ticket-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,10 +33,12 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AuthProvider>
-            <Navbar />
-            <UpcomingEventBanner />
-            <main>{children}</main>
-            <Footer />
+            <TicketProvider>
+              <Navbar />
+              <UpcomingEventBanner />
+              <main>{children}</main>
+              <Footer />
+            </TicketProvider>
           </AuthProvider>
         </QueryProvider>
       </body>

@@ -99,4 +99,5 @@ export interface UpcomingEventItem {
   ticket_sales_close: string | null;
   thumbnail_image: string | null;
   banner_image: string | null;
+  ticket_tiers: TicketTier[];
 }

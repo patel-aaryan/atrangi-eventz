@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -16,10 +16,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getUpcomingEvent } from "@/lib/api/events";
+import { useTicket } from "@/contexts/ticket-context";
 
 export function UpcomingEventBanner() {
+  const pathname = usePathname();
   const [isDismissed, setIsDismissed] = useState(false);
   const [timeUntil, setTimeUntil] = useState("");
+  const { openDrawer } = useTicket();
+
+  // Routes where the banner should not be shown
+  const hiddenRoutes = new Set(["/payment", "/checkout", "/confirmation"]);
 
   // Use React Query for caching
   const { data: event, isLoading } = useQuery({
@@ -64,12 +70,23 @@ export function UpcomingEventBanner() {
     return () => clearInterval(interval);
   }, [event]);
 
-  const handleDismiss = () => {
-    setIsDismissed(true);
+  const handleDismiss = () => setIsDismissed(true);
+
+  const handleGetTickets = () => {
+    if (!event) return;
+
+    // Check if there are any tickets available
+    if (!event.ticket_tiers || event.ticket_tiers.length === 0) {
+      console.error("No tickets available for this event");
+      return;
+    }
+
+    // Simply open the drawer with the event - context handles the rest
+    openDrawer(event);
   };
 
-  // Don't render if loading, no event, or dismissed
-  if (isLoading || !event || isDismissed) {
+  // Don't render if loading, no event, dismissed, or on hidden routes
+  if (isLoading || !event || isDismissed || hiddenRoutes.has(pathname)) {
     return null;
   }
 
@@ -275,17 +292,13 @@ export function UpcomingEventBanner() {
                 className="lg:flex-none"
               >
                 <Button
-                  asChild
+                  onClick={handleGetTickets}
                   size="lg"
-                  className="w-full bg-white font-semibold text-purple-600 shadow-lg hover:bg-white/90 hover:shadow-xl lg:min-w-[140px]"
+                  disabled={event.is_sold_out}
+                  className="w-full bg-white font-semibold text-purple-600 shadow-lg hover:bg-white/90 hover:shadow-xl lg:min-w-[140px] disabled:opacity-50"
                 >
-                  <Link
-                    href={`/events/${event.slug}`}
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <Ticket className="h-5 w-5" />
-                    <span>Get Tickets</span>
-                  </Link>
+                  <Ticket className="h-5 w-5" />
+                  <span>{event.is_sold_out ? "Sold Out" : "Get Tickets"}</span>
                 </Button>
               </motion.div>
             </div>

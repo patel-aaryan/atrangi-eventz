@@ -58,7 +58,8 @@ export class EventRepository {
         ticket_sales_open,
         ticket_sales_close,
         thumbnail_image,
-        banner_image
+        banner_image,
+        ticket_tiers
       FROM events
       WHERE status = 'published' 
         AND is_public = true
@@ -121,6 +122,7 @@ export class EventRepository {
         row.ticket_sales_close?.toISOString() || row.ticket_sales_close,
       thumbnail_image: row.thumbnail_image,
       banner_image: row.banner_image,
+      ticket_tiers: row.ticket_tiers || [],
     };
   }
 }
