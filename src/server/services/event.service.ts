@@ -1,55 +1,88 @@
-import { eventRepository } from "@/server/repository/postgres/event.repository";
-import type { EventListItem, PastEventListItem } from "@/types/event";
+import { EventRepository } from "@/server/repository/postgres/event.repository";
+import { EventCache } from "@/server/repository/redis/event.cache";
+import type { PastEventListItem, UpcomingEventItem } from "@/types/event";
 
 /**
  * Event Service - Contains business logic for events
  */
 export class EventService {
+  private readonly eventRepository: EventRepository;
+  private readonly eventCache: EventCache;
+
+  constructor() {
+    this.eventRepository = new EventRepository();
+    this.eventCache = new EventCache();
+  }
+
   /**
-   * Get past events for showcase
+   * Get past events for showcase with caching
    * Returns simplified data: title, date, attendance, location
    */
   async getPastEvents(): Promise<PastEventListItem[]> {
-    return await eventRepository.findPast();
+    // Try to get from cache first
+    const cached = await this.eventCache.getPastEvents();
+
+    // Cache hit
+    if (cached !== undefined) {
+      console.log("📦 [Service] Returning cached past events");
+      return cached;
+    }
+
+    // Cache miss - query database
+    console.log("🗄️ [Service] Fetching past events from database...");
+    const events = await this.eventRepository.findPast();
+
+    // Store result in cache
+    await this.eventCache.setPastEvents(events);
+
+    console.log("✅ [Service] Database query complete");
+    return events;
   }
 
   /**
-   * Format event for display (add computed fields)
+   * Get the next upcoming event with caching
+   * Returns null if no upcoming event is found
    */
-  formatEventForDisplay(event: EventListItem) {
-    const now = new Date();
+  async getUpcomingEvent(): Promise<UpcomingEventItem | null> {
+    // Try to get from cache first
+    const cached = await this.eventCache.getUpcomingEvent();
 
-    // Calculate ticket status
-    let ticketStatus = "Not Available";
-    let hasTicketsAvailable = false;
-
-    if (event.status === "published" && !event.is_sold_out) {
-      const salesOpen = event.ticket_sales_open
-        ? new Date(event.ticket_sales_open)
-        : null;
-      const salesClose = event.ticket_sales_close
-        ? new Date(event.ticket_sales_close)
-        : null;
-
-      if (salesOpen && salesOpen > now) {
-        ticketStatus = "Coming Soon";
-      } else if (salesClose && salesClose < now) {
-        ticketStatus = "Sales Ended";
-      } else {
-        ticketStatus = "Available";
-        hasTicketsAvailable = true;
-      }
-    } else if (event.is_sold_out) {
-      ticketStatus = "Sold Out";
+    // Cache hit
+    if (cached !== undefined) {
+      console.log("📦 [Service] Returning cached result");
+      return cached;
     }
 
-    return {
-      ...event,
-      ticketStatus,
-      hasTicketsAvailable,
-    };
+    // Cache miss - query database
+    console.log("🗄️ [Service] Fetching from database...");
+    const event = await this.eventRepository.findUpcoming();
+
+    // Store result in cache
+    if (event) {
+      await this.eventCache.setUpcomingEvent(event);
+    } else {
+      await this.eventCache.setNoUpcomingEvent();
+    }
+
+    console.log("✅ [Service] Database query complete");
+    return event;
+  }
+
+  /**
+   * Invalidate upcoming event cache
+   * Call this when event data changes (e.g., after admin updates)
+   */
+  async invalidateUpcomingEventCache(): Promise<void> {
+    console.log("🔄 [Service] Invalidating upcoming event cache...");
+    await this.eventCache.invalidateUpcomingEvent();
+  }
+
+  /**
+   * Invalidate past events cache
+   * Call this when event data changes (e.g., after admin updates)
+   */
+  async invalidatePastEventsCache(): Promise<void> {
+    console.log("🔄 [Service] Invalidating past events cache...");
+    await this.eventCache.invalidatePastEvents();
   }
 }
-
-// Export a singleton instance
-export const eventService = new EventService();
