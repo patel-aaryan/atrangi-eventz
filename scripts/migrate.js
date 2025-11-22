@@ -47,9 +47,18 @@ const args = process.argv.slice(3);
 
 console.log(`\n🔄 Running database migration: ${command}\n`);
 
+// For create command, automatically add --sql-file flag
+let dbMigrateArgs = [command, ...args];
+if (command === "create") {
+  // If --sql-file is not already in args, add it
+  if (!args.includes("--sql-file")) {
+    dbMigrateArgs = [command, ...args, "--sql-file"];
+  }
+}
+
 // Run db-migrate
 // Use 'db-migrate' directly - npm will resolve it from node_modules/.bin
-const dbMigrate = spawn("db-migrate", [command, ...args], {
+const dbMigrate = spawn("db-migrate", dbMigrateArgs, {
   stdio: "inherit",
   env: process.env,
   shell: true,

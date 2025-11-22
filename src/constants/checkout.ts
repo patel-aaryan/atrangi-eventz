@@ -21,7 +21,7 @@ export const calculateProcessingFee = (amount: number): number => {
 export const TRUST_SIGNALS = [
   { text: "Secure checkout with Stripe", color: "green" },
   { text: "Instant ticket delivery via email", color: "green" },
-  { text: "Full refund up to 24h before event", color: "green" },
+  { text: "All sales are final", color: "green" },
 ] as const;
 
 // Form Validation Patterns

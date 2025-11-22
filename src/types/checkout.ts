@@ -112,7 +112,7 @@ export interface Order {
   total: number;
   promoCode?: string;
   customerInfo: CheckoutFormData;
-  status: "pending" | "completed" | "failed" | "refunded";
+  status: "pending" | "completed" | "failed";
   createdAt: Date;
   updatedAt: Date;
 }
