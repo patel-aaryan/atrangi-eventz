@@ -2,7 +2,7 @@
 -- Description: Stores individual purchased tickets for events
 
 -- Create enum type for ticket status
-CREATE TYPE ticket_status AS ENUM ('pending', 'confirmed', 'cancelled', 'refunded', 'checked_in');
+CREATE TYPE ticket_status AS ENUM ('pending', 'confirmed', 'cancelled', 'checked_in');
 
 CREATE TABLE IF NOT EXISTS tickets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
