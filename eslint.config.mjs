@@ -42,9 +42,7 @@ const eslintConfig = [
   {
     // Allow repository imports only in services directory
     files: ["src/server/services/**/*.ts"],
-    rules: {
-      "no-restricted-imports": "off",
-    },
+    rules: { "no-restricted-imports": "off" },
   },
 ];
 
