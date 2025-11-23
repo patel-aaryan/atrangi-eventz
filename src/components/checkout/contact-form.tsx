@@ -12,7 +12,11 @@ interface ContactFormProps {
   onChange: (field: keyof ContactInfo, value: string) => void;
 }
 
-export function ContactForm({ data, errors, onChange }: ContactFormProps) {
+export function ContactForm({
+  data,
+  errors,
+  onChange,
+}: Readonly<ContactFormProps>) {
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>

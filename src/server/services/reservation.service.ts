@@ -105,4 +105,20 @@ export class ReservationService {
       await this.reservationCache.releaseLock(eventId);
     }
   }
+
+  /**
+   * Get reservations for an event by session ID
+   * Returns array of reservations with tierIndex and quantity
+   */
+  async getReservationsBySession(
+    eventId: string,
+    sessionId: string
+  ): Promise<Array<{ tierIndex: number; quantity: number }>> {
+    const reservations =
+      await this.reservationCache.getReservationsBySession(eventId, sessionId);
+    return reservations.map((reservation) => ({
+      tierIndex: reservation.tierIndex,
+      quantity: reservation.quantity,
+    }));
+  }
 }

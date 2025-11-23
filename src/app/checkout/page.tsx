@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -11,26 +11,11 @@ import { ContactForm, AttendeeCard } from "@/components/checkout";
 import type { AttendeeInfo, ContactInfo } from "@/types/checkout";
 import { CHECKOUT_STEPS, EMAIL_REGEX } from "@/constants/checkout";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTicket } from "@/contexts/ticket-context";
 
 export default function CheckoutPage() {
   const router = useRouter();
-
-  // TODO: Replace with actual data from URL params or state management
-  // Example: const searchParams = useSearchParams();
-  // const tickets = JSON.parse(searchParams.get('tickets') || '[]');
-  const mockTickets = [
-    {
-      id: "ticket-1",
-      ticketTypeId: "general",
-      ticketName: "General Admission",
-    },
-    {
-      id: "ticket-2",
-      ticketTypeId: "general",
-      ticketName: "General Admission",
-    },
-    { id: "ticket-3", ticketTypeId: "vip", ticketName: "VIP Pass" },
-  ];
+  const { ticketSelections } = useTicket();
 
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
     firstName: "",
@@ -40,15 +25,28 @@ export default function CheckoutPage() {
     phone: "",
   });
 
-  const [attendees, setAttendees] = useState<AttendeeInfo[]>(
-    mockTickets.map((ticket) => ({
-      ticketId: ticket.id,
-      ticketName: ticket.ticketName,
-      firstName: "",
-      lastName: "",
-      email: "",
-    }))
-  );
+  // Generate attendees from ticket selections
+  const [attendees, setAttendees] = useState<AttendeeInfo[]>([]);
+
+  useEffect(() => {
+    // Transform ticketSelections into attendees array
+    // Each ticket selection with quantity > 0 creates that many attendee entries
+    const newAttendees: AttendeeInfo[] = [];
+
+    for (const selection of ticketSelections) {
+      for (let i = 0; i < selection.quantity; i++) {
+        newAttendees.push({
+          ticketId: `${selection.ticketId}-${i}`,
+          ticketName: selection.ticketName,
+          firstName: "",
+          lastName: "",
+          email: "",
+        });
+      }
+    }
+
+    setAttendees(newAttendees);
+  }, [ticketSelections]);
 
   const [contactErrors, setContactErrors] = useState<
     Partial<Record<keyof ContactInfo, string>>
@@ -116,7 +114,7 @@ export default function CheckoutPage() {
     }
 
     // Validate attendees
-    attendees.forEach((attendee) => {
+    for (const attendee of attendees) {
       const errors: Partial<Record<keyof AttendeeInfo, string>> = {};
 
       if (!attendee.firstName) {
@@ -136,7 +134,7 @@ export default function CheckoutPage() {
       if (Object.keys(errors).length > 0) {
         newAttendeeErrors[attendee.ticketId] = errors;
       }
-    });
+    }
 
     setContactErrors(newContactErrors);
     setAttendeeErrors(newAttendeeErrors);

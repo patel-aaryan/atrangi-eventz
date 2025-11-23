@@ -61,7 +61,10 @@ export class ReservationCache {
       do {
         // Upstash Redis scan returns [cursor, keys[]] where cursor is a string
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const result: any = await redis.scan(cursor, { match: pattern, count: 100 });
+        const result: any = await redis.scan(cursor, {
+          match: pattern,
+          count: 100,
+        });
 
         // Handle both tuple and object return types
         if (Array.isArray(result)) {
@@ -109,6 +112,25 @@ export class ReservationCache {
       return values.filter((value): value is ReservationData => value !== null);
     } catch (error) {
       console.error("Error getting reservations:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Get reservations for an event filtered by session ID
+   * Returns array of reservation data for the given session
+   */
+  async getReservationsBySession(
+    eventId: string,
+    sessionId: string
+  ): Promise<ReservationData[]> {
+    try {
+      const allReservations = await this.getReservations(eventId);
+      return allReservations.filter(
+        (reservation) => reservation.sessionId === sessionId
+      );
+    } catch (error) {
+      console.error("Error getting reservations by session:", error);
       return [];
     }
   }
