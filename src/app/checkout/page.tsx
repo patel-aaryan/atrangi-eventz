@@ -1,166 +1,100 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProgressIndicator } from "@/components/payment";
 import { ContactForm, AttendeeCard } from "@/components/checkout";
-import type { AttendeeInfo, ContactInfo } from "@/types/checkout";
-import { CHECKOUT_STEPS, EMAIL_REGEX } from "@/constants/checkout";
+import { CHECKOUT_STEPS } from "@/constants/checkout";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTicket } from "@/contexts/ticket-context";
+import {
+  checkoutFormSchema,
+  type CheckoutFormInput,
+} from "@/lib/validation/checkout";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setCheckoutData } from "@/store/slices/checkoutSlice";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { ticketSelections } = useTicket();
+  const dispatch = useAppDispatch();
+  const savedCheckoutData = useAppSelector((state) => state.checkout.formData);
 
-  const [contactInfo, setContactInfo] = useState<ContactInfo>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    confirmEmail: "",
-    phone: "",
+  const form = useForm<CheckoutFormInput>({
+    resolver: zodResolver(checkoutFormSchema),
+    mode: "onBlur",
+    reValidateMode: "onBlur",
+    defaultValues: {
+      contact: savedCheckoutData?.contact || {
+        firstName: "",
+        lastName: "",
+        email: "",
+        confirmEmail: "",
+        phone: "",
+      },
+      attendees: [],
+    },
   });
 
-  // Generate attendees from ticket selections
-  const [attendees, setAttendees] = useState<AttendeeInfo[]>([]);
+  // Watch form values to trigger validation
+  const watchedValues = form.watch();
 
+  // Check if form is valid
+  const isFormValid = useMemo(() => {
+    const result = checkoutFormSchema.safeParse(watchedValues);
+    return result.success;
+  }, [watchedValues]);
+
+  const { fields, replace } = useFieldArray({
+    control: form.control,
+    name: "attendees",
+  });
+
+  // Generate attendees from ticket selections and merge with saved data
   useEffect(() => {
-    // Transform ticketSelections into attendees array
-    // Each ticket selection with quantity > 0 creates that many attendee entries
-    const newAttendees: AttendeeInfo[] = [];
+    const newAttendees: CheckoutFormInput["attendees"] = [];
 
     for (const selection of ticketSelections) {
       for (let i = 0; i < selection.quantity; i++) {
+        const ticketId = `${selection.ticketId}-${i}`;
+        // Try to find saved data for this attendee
+        const savedAttendee = savedCheckoutData?.attendees?.find(
+          (a) => a.ticketId === ticketId
+        );
+
         newAttendees.push({
-          ticketId: `${selection.ticketId}-${i}`,
+          ticketId,
           ticketName: selection.ticketName,
-          firstName: "",
-          lastName: "",
-          email: "",
+          firstName: savedAttendee?.firstName || "",
+          lastName: savedAttendee?.lastName || "",
+          email: savedAttendee?.email || "",
         });
       }
     }
 
-    setAttendees(newAttendees);
-  }, [ticketSelections]);
+    replace(newAttendees);
 
-  const [contactErrors, setContactErrors] = useState<
-    Partial<Record<keyof ContactInfo, string>>
-  >({});
+    // Reset form with saved contact data and merged attendees
+    form.reset({
+      contact: savedCheckoutData?.contact || form.getValues("contact"),
+      attendees: newAttendees,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticketSelections, replace]); // savedCheckoutData is stable from Redux, form.reset is stable
 
-  const [attendeeErrors, setAttendeeErrors] = useState<
-    Record<string, Partial<Record<keyof AttendeeInfo, string>>>
-  >({});
+  const handleContinue = form.handleSubmit((data) => {
+    // Store attendee info in Redux (which persists to session storage)
+    dispatch(setCheckoutData(data));
+    router.push("/payment");
+  });
 
-  const handleContactChange = (field: keyof ContactInfo, value: string) => {
-    setContactInfo((prev) => ({ ...prev, [field]: value }));
-    if (contactErrors[field]) {
-      setContactErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  };
-
-  const handleAttendeeChange = (
-    ticketId: string,
-    field: keyof AttendeeInfo,
-    value: string
-  ) => {
-    setAttendees((prev) =>
-      prev.map((attendee) =>
-        attendee.ticketId === ticketId
-          ? { ...attendee, [field]: value }
-          : attendee
-      )
-    );
-    if (attendeeErrors[ticketId]?.[field]) {
-      setAttendeeErrors((prev) => ({
-        ...prev,
-        [ticketId]: { ...prev[ticketId], [field]: undefined },
-      }));
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const newContactErrors: Partial<Record<keyof ContactInfo, string>> = {};
-    const newAttendeeErrors: Record<
-      string,
-      Partial<Record<keyof AttendeeInfo, string>>
-    > = {};
-
-    // Validate contact info
-    if (!contactInfo.firstName) {
-      newContactErrors.firstName = "First name is required";
-    }
-
-    if (!contactInfo.lastName) {
-      newContactErrors.lastName = "Last name is required";
-    }
-
-    if (!contactInfo.email) {
-      newContactErrors.email = "Email is required";
-    } else if (!EMAIL_REGEX.test(contactInfo.email)) {
-      newContactErrors.email = "Invalid email format";
-    }
-
-    if (contactInfo.email !== contactInfo.confirmEmail) {
-      newContactErrors.confirmEmail = "Emails do not match";
-    }
-
-    if (!contactInfo.phone) {
-      newContactErrors.phone = "Phone number is required";
-    }
-
-    // Validate attendees
-    for (const attendee of attendees) {
-      const errors: Partial<Record<keyof AttendeeInfo, string>> = {};
-
-      if (!attendee.firstName) {
-        errors.firstName = "First name is required";
-      }
-
-      if (!attendee.lastName) {
-        errors.lastName = "Last name is required";
-      }
-
-      if (!attendee.email) {
-        errors.email = "Email is required";
-      } else if (!EMAIL_REGEX.test(attendee.email)) {
-        errors.email = "Invalid email format";
-      }
-
-      if (Object.keys(errors).length > 0) {
-        newAttendeeErrors[attendee.ticketId] = errors;
-      }
-    }
-
-    setContactErrors(newContactErrors);
-    setAttendeeErrors(newAttendeeErrors);
-
-    return (
-      Object.keys(newContactErrors).length === 0 &&
-      Object.keys(newAttendeeErrors).length === 0
-    );
-  };
-
-  const handleContinue = () => {
-    if (validateForm()) {
-      // TODO: Store attendee info in state management or pass to payment
-      // Example: Store in session storage or Redux/Zustand store
-      // sessionStorage.setItem('attendeeInfo', JSON.stringify({ contactInfo, attendees }));
-      console.log("Attendee info:", { contactInfo, attendees });
-      router.push("/payment");
-    } else {
-      // Scroll to first error
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const handleBack = () => {
-    router.back();
-  };
+  const handleBack = () => router.back();
 
   return (
     <section className="relative overflow-hidden pt-8 pb-16 min-h-screen">
@@ -201,22 +135,25 @@ export default function CheckoutPage() {
             <Card className="h-[600px] flex flex-col">
               <CardHeader>
                 <CardTitle className="text-2xl">
-                  Attendee Details ({attendees.length}{" "}
-                  {attendees.length === 1 ? "Ticket" : "Tickets"})
+                  Attendee Details ({fields.length}{" "}
+                  {fields.length === 1 ? "Ticket" : "Tickets"})
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-1 overflow-hidden p-0">
                 <ScrollArea className="h-full px-6 pb-6">
                   <div className="space-y-4">
-                    {attendees.map((attendee, index) => (
+                    {fields.map((field, index) => (
                       <AttendeeCard
-                        key={attendee.ticketId}
-                        attendee={attendee}
+                        key={field.id}
                         index={index}
-                        errors={attendeeErrors[attendee.ticketId] || {}}
-                        onChange={(field, value) =>
-                          handleAttendeeChange(attendee.ticketId, field, value)
+                        ticketId={field.ticketId}
+                        ticketName={field.ticketName}
+                        register={form.register}
+                        errors={form.formState.errors.attendees?.[index]}
+                        touchedFields={
+                          form.formState.touchedFields.attendees?.[index]
                         }
+                        isSubmitted={form.formState.isSubmitted}
                       />
                     ))}
                   </div>
@@ -233,9 +170,10 @@ export default function CheckoutPage() {
             className="h-[600px]"
           >
             <ContactForm
-              data={contactInfo}
-              errors={contactErrors}
-              onChange={handleContactChange}
+              register={form.register}
+              errors={form.formState.errors.contact}
+              touchedFields={form.formState.touchedFields.contact}
+              isSubmitted={form.formState.isSubmitted}
             />
           </motion.div>
         </div>
@@ -259,7 +197,8 @@ export default function CheckoutPage() {
           <Button
             size="lg"
             onClick={handleContinue}
-            className="flex-1 bg-gradient-to-r from-primary to-pink-500 hover:opacity-90"
+            disabled={!isFormValid}
+            className="flex-1 bg-gradient-to-r from-primary to-pink-500 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Continue to Payment
             <ChevronRight className="w-5 h-5 ml-2" />
