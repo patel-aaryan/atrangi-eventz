@@ -1,5 +1,5 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { FlatCompat } from "@eslint/eslintrc";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -21,6 +21,28 @@ const eslintConfig = [
       "migrations/**/*.js",
       "scripts/**/*.js",
     ],
+  },
+  {
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/server/repository/**"],
+              message:
+                "Repositories can only be imported by services. Import from @/server/services instead.",
+              allowTypeImports: false,
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Allow repository imports only in services directory
+    files: ["src/server/services/**/*.ts"],
+    rules: { "no-restricted-imports": "off" },
   },
 ];
 

@@ -6,21 +6,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { User, Mail } from "lucide-react";
-import type { AttendeeInfo } from "@/types/checkout";
+import type { UseFormRegister, FieldErrors, FieldValues } from "react-hook-form";
+import type { CheckoutFormInput } from "@/lib/validation/checkout";
 
 interface AttendeeCardProps {
-  attendee: AttendeeInfo;
   index: number;
-  errors: Partial<Record<keyof AttendeeInfo, string>>;
-  onChange: (field: keyof AttendeeInfo, value: string) => void;
+  ticketId: string;
+  ticketName: string;
+  register: UseFormRegister<CheckoutFormInput>;
+  errors?: FieldErrors<CheckoutFormInput["attendees"][number]>;
+  touchedFields?: Partial<Readonly<FieldValues>>;
+  isSubmitted: boolean;
 }
 
 export function AttendeeCard({
-  attendee,
   index,
+  ticketId,
+  ticketName,
+  register,
   errors,
-  onChange,
-}: AttendeeCardProps) {
+  touchedFields,
+  isSubmitted,
+}: Readonly<AttendeeCardProps>) {
+  const shouldShowError = (field: keyof CheckoutFormInput["attendees"][number]) => {
+    return isSubmitted || touchedFields?.[field];
+  };
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -34,61 +44,58 @@ export function AttendeeCard({
               <User className="w-5 h-5" />
               Attendee {index + 1}
             </CardTitle>
-            <Badge variant="outline">{attendee.ticketName}</Badge>
+            <Badge variant="outline">{ticketName}</Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor={`firstName-${attendee.ticketId}`}>
+              <Label htmlFor={`firstName-${ticketId}`}>
                 First Name <span className="text-destructive">*</span>
               </Label>
               <Input
-                id={`firstName-${attendee.ticketId}`}
-                value={attendee.firstName}
-                onChange={(e) => onChange("firstName", e.target.value)}
+                id={`firstName-${ticketId}`}
+                {...register(`attendees.${index}.firstName`)}
                 placeholder="John"
-                className={errors.firstName ? "border-destructive" : ""}
+                className={errors?.firstName && shouldShowError("firstName") ? "border-destructive" : ""}
               />
-              {errors.firstName && (
-                <p className="text-sm text-destructive">{errors.firstName}</p>
+              {errors?.firstName && shouldShowError("firstName") && (
+                <p className="text-sm text-destructive">{errors.firstName.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor={`lastName-${attendee.ticketId}`}>
+              <Label htmlFor={`lastName-${ticketId}`}>
                 Last Name <span className="text-destructive">*</span>
               </Label>
               <Input
-                id={`lastName-${attendee.ticketId}`}
-                value={attendee.lastName}
-                onChange={(e) => onChange("lastName", e.target.value)}
+                id={`lastName-${ticketId}`}
+                {...register(`attendees.${index}.lastName`)}
                 placeholder="Doe"
-                className={errors.lastName ? "border-destructive" : ""}
+                className={errors?.lastName && shouldShowError("lastName") ? "border-destructive" : ""}
               />
-              {errors.lastName && (
-                <p className="text-sm text-destructive">{errors.lastName}</p>
+              {errors?.lastName && shouldShowError("lastName") && (
+                <p className="text-sm text-destructive">{errors.lastName.message}</p>
               )}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={`email-${attendee.ticketId}`}>
+            <Label htmlFor={`email-${ticketId}`}>
               Email Address <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
               <Input
-                id={`email-${attendee.ticketId}`}
+                id={`email-${ticketId}`}
                 type="email"
-                value={attendee.email}
-                onChange={(e) => onChange("email", e.target.value)}
+                {...register(`attendees.${index}.email`)}
                 placeholder="john.doe@example.com"
-                className={errors.email ? "border-destructive" : ""}
+                className={errors?.email && shouldShowError("email") ? "border-destructive" : ""}
               />
               <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             </div>
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email}</p>
+            {errors?.email && shouldShowError("email") && (
+              <p className="text-sm text-destructive">{errors.email.message}</p>
             )}
             <p className="text-xs text-muted-foreground">
               Each attendee will receive their own ticket

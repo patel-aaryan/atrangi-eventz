@@ -4,15 +4,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Phone } from "lucide-react";
-import type { ContactInfo } from "@/types/checkout";
+import type { UseFormRegister, FieldErrors, FieldValues } from "react-hook-form";
+import type { CheckoutFormInput } from "@/lib/validation/checkout";
 
 interface ContactFormProps {
-  data: ContactInfo;
-  errors: Partial<Record<keyof ContactInfo, string>>;
-  onChange: (field: keyof ContactInfo, value: string) => void;
+  register: UseFormRegister<CheckoutFormInput>;
+  errors?: FieldErrors<CheckoutFormInput["contact"]>;
+  touchedFields?: Partial<Readonly<FieldValues>>;
+  isSubmitted: boolean;
 }
 
-export function ContactForm({ data, errors, onChange }: ContactFormProps) {
+export function ContactForm({
+  register,
+  errors,
+  touchedFields,
+  isSubmitted,
+}: Readonly<ContactFormProps>) {
+  const shouldShowError = (field: keyof CheckoutFormInput["contact"]) => {
+    return isSubmitted || touchedFields?.[field];
+  };
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
@@ -32,13 +42,12 @@ export function ContactForm({ data, errors, onChange }: ContactFormProps) {
             </Label>
             <Input
               id="firstName"
-              value={data.firstName}
-              onChange={(e) => onChange("firstName", e.target.value)}
+              {...register("contact.firstName")}
               placeholder="John"
-              className={errors.firstName ? "border-destructive" : ""}
+              className={errors?.firstName && shouldShowError("firstName") ? "border-destructive" : ""}
             />
-            {errors.firstName && (
-              <p className="text-sm text-destructive">{errors.firstName}</p>
+            {errors?.firstName && shouldShowError("firstName") && (
+              <p className="text-sm text-destructive">{errors.firstName.message}</p>
             )}
           </div>
 
@@ -48,13 +57,12 @@ export function ContactForm({ data, errors, onChange }: ContactFormProps) {
             </Label>
             <Input
               id="lastName"
-              value={data.lastName}
-              onChange={(e) => onChange("lastName", e.target.value)}
+              {...register("contact.lastName")}
               placeholder="Doe"
-              className={errors.lastName ? "border-destructive" : ""}
+              className={errors?.lastName && shouldShowError("lastName") ? "border-destructive" : ""}
             />
-            {errors.lastName && (
-              <p className="text-sm text-destructive">{errors.lastName}</p>
+            {errors?.lastName && shouldShowError("lastName") && (
+              <p className="text-sm text-destructive">{errors.lastName.message}</p>
             )}
           </div>
         </div>
@@ -66,13 +74,12 @@ export function ContactForm({ data, errors, onChange }: ContactFormProps) {
           <Input
             id="email"
             type="email"
-            value={data.email}
-            onChange={(e) => onChange("email", e.target.value)}
+            {...register("contact.email")}
             placeholder="john.doe@example.com"
-            className={errors.email ? "border-destructive" : ""}
+            className={errors?.email && shouldShowError("email") ? "border-destructive" : ""}
           />
-          {errors.email && (
-            <p className="text-sm text-destructive">{errors.email}</p>
+          {errors?.email && shouldShowError("email") && (
+            <p className="text-sm text-destructive">{errors.email.message}</p>
           )}
         </div>
 
@@ -83,13 +90,12 @@ export function ContactForm({ data, errors, onChange }: ContactFormProps) {
           <Input
             id="confirmEmail"
             type="email"
-            value={data.confirmEmail}
-            onChange={(e) => onChange("confirmEmail", e.target.value)}
+            {...register("contact.confirmEmail")}
             placeholder="john.doe@example.com"
-            className={errors.confirmEmail ? "border-destructive" : ""}
+            className={errors?.confirmEmail && shouldShowError("confirmEmail") ? "border-destructive" : ""}
           />
-          {errors.confirmEmail && (
-            <p className="text-sm text-destructive">{errors.confirmEmail}</p>
+          {errors?.confirmEmail && shouldShowError("confirmEmail") && (
+            <p className="text-sm text-destructive">{errors.confirmEmail.message}</p>
           )}
         </div>
 
@@ -101,15 +107,14 @@ export function ContactForm({ data, errors, onChange }: ContactFormProps) {
             <Input
               id="phone"
               type="tel"
-              value={data.phone}
-              onChange={(e) => onChange("phone", e.target.value)}
+              {...register("contact.phone")}
               placeholder="(555) 123-4567"
-              className={errors.phone ? "border-destructive" : ""}
+              className={errors?.phone && shouldShowError("phone") ? "border-destructive" : ""}
             />
             <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           </div>
-          {errors.phone && (
-            <p className="text-sm text-destructive">{errors.phone}</p>
+          {errors?.phone && shouldShowError("phone") && (
+            <p className="text-sm text-destructive">{errors.phone.message}</p>
           )}
           <p className="text-xs text-muted-foreground">
             For important event updates and ticket verification

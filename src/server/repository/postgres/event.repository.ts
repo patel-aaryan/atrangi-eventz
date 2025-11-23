@@ -37,6 +37,43 @@ export class EventRepository {
   }
 
   /**
+   * Find an event by ID
+   * Returns null if event is not found
+   */
+  async findById(eventId: string): Promise<UpcomingEventItem | null> {
+    const query = `
+      SELECT 
+        id, 
+        title, 
+        slug, 
+        description,
+        start_date, 
+        end_date,
+        venue_name, 
+        venue_city,
+        total_capacity,
+        total_tickets_sold,
+        tickets_remaining,
+        is_sold_out,
+        ticket_sales_open,
+        ticket_sales_close,
+        thumbnail_image,
+        banner_image,
+        ticket_tiers
+      FROM events
+      WHERE id = $1
+    `;
+
+    const result = await pool.query(query, [eventId]);
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    return this.mapRowToUpcomingEventItem(result.rows[0]);
+  }
+
+  /**
    * Find the next upcoming published event
    * Returns null if no upcoming event is found
    */
