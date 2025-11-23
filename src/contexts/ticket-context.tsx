@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { TicketSelectionDrawer } from "@/components/events/ticket-selection-drawer";
 import type { TicketType } from "@/types/checkout";
 import type { UpcomingEventItem, TicketTier } from "@/types/event";
+import { reserveTickets } from "@/lib/api/tickets";
 
 interface TicketSelection {
   ticketId: string;
@@ -40,17 +41,10 @@ interface TicketContextType {
   updateTicketQuantity: (ticketId: string, quantity: number) => void;
   clearSelections: () => void;
 
-  // Promo code
-  promoCode: string | null;
-  setPromoCode: (code: string | null) => void;
-
   // Computed values
   totalTickets: number;
   subtotal: number;
   ticketSelections: TicketSelection[]; // Formatted selections with details
-
-  // Navigation
-  proceedToCheckout: () => void;
 }
 
 const TicketContext = createContext<TicketContextType | undefined>(undefined);
@@ -86,7 +80,6 @@ export function TicketProvider({ children }: TicketProviderProps) {
   const [selectedTickets, setSelectedTickets] = useState<
     Record<string, number>
   >({});
-  const [promoCode, setPromoCode] = useState<string | null>(null);
 
   // Drawer controls
   const openDrawer = useCallback((event: UpcomingEventItem) => {
@@ -143,7 +136,6 @@ export function TicketProvider({ children }: TicketProviderProps) {
 
   const clearSelections = useCallback(() => {
     setSelectedTickets({});
-    setPromoCode(null);
   }, []);
 
   // Transform ticket tiers for the drawer
@@ -198,39 +190,40 @@ export function TicketProvider({ children }: TicketProviderProps) {
     });
   }, [currentEvent]);
 
-  // Navigation
-  const proceedToCheckout = useCallback(() => {
-    if (!currentEvent || totalTickets === 0) return;
-
-    const params = new URLSearchParams({
-      event: currentEvent.slug,
-      tickets: JSON.stringify(selectedTickets),
-    });
-
-    if (promoCode) params.set("promo", promoCode);
-
-    router.push(`/checkout?${params.toString()}`);
-    setIsOpen(false);
-  }, [currentEvent, selectedTickets, promoCode, totalTickets, router]);
-
   const handleProceedToCheckout = useCallback(
-    (selections: Record<string, number>, code?: string) => {
+    async (selections: Record<string, number>) => {
       if (!currentEvent) return;
 
-      // Update context state
-      setSelectedTickets(selections);
-      if (code) setPromoCode(code);
+      try {
+        // Update context state
+        setSelectedTickets(selections);
 
-      // Navigate to checkout
-      const params = new URLSearchParams({
-        event: currentEvent.slug,
-        tickets: JSON.stringify(selections),
-      });
+        // Reserve all selected tickets before navigating
+        const reservationPromises = Object.entries(selections)
+          .filter(([, quantity]) => quantity > 0)
+          .map(([ticketId, quantity]) => {
+            const tierIndex = Number.parseInt(
+              ticketId.replace("ticket-", ""),
+              10
+            );
+            return reserveTickets({
+              eventId: currentEvent.id,
+              tierIndex,
+              quantity,
+            });
+          });
 
-      if (code) params.set("promo", code);
+        // Wait for all reservations to complete
+        await Promise.all(reservationPromises);
 
-      router.push(`/checkout?${params.toString()}`);
-      setIsOpen(false);
+        // Navigate to checkout
+        router.push("/checkout");
+        setIsOpen(false);
+      } catch (error) {
+        console.error("Failed to reserve tickets:", error);
+        // TODO: Show error toast/notification to user
+        throw error;
+      }
     },
     [currentEvent, router]
   );
@@ -256,17 +249,10 @@ export function TicketProvider({ children }: TicketProviderProps) {
       updateTicketQuantity,
       clearSelections,
 
-      // Promo code
-      promoCode,
-      setPromoCode,
-
       // Computed values
       totalTickets,
       subtotal,
       ticketSelections,
-
-      // Navigation
-      proceedToCheckout,
     }),
     [
       isOpen,
@@ -278,11 +264,9 @@ export function TicketProvider({ children }: TicketProviderProps) {
       removeTicket,
       updateTicketQuantity,
       clearSelections,
-      promoCode,
       totalTickets,
       subtotal,
       ticketSelections,
-      proceedToCheckout,
     ]
   );
 

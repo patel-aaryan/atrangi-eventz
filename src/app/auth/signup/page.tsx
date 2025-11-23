@@ -83,6 +83,7 @@ export default function SignUpPage() {
         router.refresh();
       }
     } catch (err) {
+      console.error("Sign-up error:", err);
       setError("An error occurred. Please try again.");
       setIsLoading(false);
     }

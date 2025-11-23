@@ -3,7 +3,7 @@
 -- Note: This migration requires the orders table to exist first (created in orders migration)
 
 -- Create enum type for ticket status
-CREATE TYPE ticket_status AS ENUM ('pending', 'confirmed', 'cancelled', 'checked_in');
+CREATE TYPE ticket_status AS ENUM ('pending', 'confirmed', 'checked_in');
 
 CREATE TABLE IF NOT EXISTS tickets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
