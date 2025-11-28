@@ -199,4 +199,46 @@ export class ReservationCache {
       // Don't throw - deletion failures shouldn't break the app
     }
   }
+
+  /**
+   * Create multiple reservations atomically
+   * Returns array of reservation IDs
+   */
+  async createReservations(
+    eventId: string,
+    sessionId: string,
+    reservations: Array<{ quantity: number; tierIndex: number }>
+  ): Promise<string[]> {
+    try {
+      const reservationIds: string[] = [];
+      const reservationPromises: Promise<unknown>[] = [];
+
+      for (const reservation of reservations) {
+        const reservationId = crypto.randomUUID();
+        reservationIds.push(reservationId);
+        const reservationKey = `${this.RESERVATION_KEY_PREFIX}${eventId}:${reservationId}`;
+
+        const reservationData: ReservationData = {
+          sessionId,
+          quantity: reservation.quantity,
+          tierIndex: reservation.tierIndex,
+        };
+
+        // Store reservation with TTL
+        reservationPromises.push(
+          redis.set(reservationKey, reservationData, {
+            ex: this.RESERVATION_TTL,
+          })
+        );
+      }
+
+      // Create all reservations in parallel
+      await Promise.all(reservationPromises);
+
+      return reservationIds;
+    } catch (error) {
+      console.error("Error creating batch reservations:", error);
+      throw new Error("Failed to create batch reservations");
+    }
+  }
 }

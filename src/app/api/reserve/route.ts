@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ReservationService } from "@/server/services/reservation.service";
-import { validateReservationRequest, handleReservationError } from "@/lib/api/validation";
+import { handleReservationError } from "@/lib/api/validation";
 import { getOrCreateSessionId } from "@/lib/api/session";
-
+import {
+  handleBatchReservation,
+  handleSingleReservation,
+} from "@/lib/utils/reservation";
 
 /**
  * GET /api/reservations?eventId=<eventId>
@@ -47,36 +50,41 @@ export async function GET(request: NextRequest) {
   }
 }
 
-
 /**
  * POST /api/reserve
  * Reserve tickets for an event
  * Creates a reservation that expires in 20 minutes
+ *
+ * Supports two modes:
+ * 1. Single reservation: { eventId, tierIndex, quantity }
+ * 2. Batch reservation: { eventId, reservations: [{ tierIndex, quantity }, ...] }
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, tierIndex, quantity } = body;
+    const { eventId, reservations } = body as {
+      eventId?: string;
+      reservations?: Array<{ tierIndex: number; quantity: number }>;
+    };
 
-    // Validate request
-    const validationError = validateReservationRequest(body);
-    if (validationError) return validationError;
-
-    // Get or create sessionId
     const sessionId = await getOrCreateSessionId();
 
-    // Create reservation (service handles event validation and tier capacity)
-    const reservationService = new ReservationService();
-    const result = await reservationService.reserveTickets({
-      eventId,
-      tierIndex,
-      requestedQuantity: quantity,
-      sessionId,
-    });
+    // Check if this is a batch reservation
+    if (
+      reservations &&
+      Array.isArray(reservations) &&
+      reservations.length > 0
+    ) {
+      return await handleBatchReservation(
+        eventId || "",
+        reservations,
+        sessionId
+      );
+    }
 
-    return NextResponse.json({ reservationId: result.reservationId }, { status: 200 });
+    // Single reservation mode (backward compatible)
+    return await handleSingleReservation(body, sessionId);
   } catch (error) {
     return handleReservationError(error);
   }
 }
-

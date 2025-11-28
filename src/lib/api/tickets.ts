@@ -12,6 +12,15 @@ interface ReserveTicketsResponse {
   reservationId: string;
 }
 
+interface BatchReserveTicketsRequest {
+  eventId: string;
+  reservations: Array<{ tierIndex: number; quantity: number }>;
+}
+
+interface BatchReserveTicketsResponse {
+  reservationIds: string[];
+}
+
 interface ApiErrorResponse {
   error: string;
   message?: string;
@@ -75,4 +84,32 @@ export async function getReservations(
 
   const data: GetReservationsResponse = await response.json();
   return data.reservations;
+}
+
+/**
+ * Reserve multiple tickets for an event in a single atomic operation
+ * This prevents race conditions when reserving multiple tickets at once
+ * @param params - Batch reservation parameters (eventId, reservations array)
+ * @returns Array of reservation IDs
+ */
+export async function reserveTicketsBatch(
+  params: BatchReserveTicketsRequest
+): Promise<string[]> {
+  const response = await fetch("/api/reserve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) {
+    const error: ApiErrorResponse = await response
+      .json()
+      .catch(() => ({ error: "Failed to reserve tickets" }));
+    throw new Error(
+      error.message || error.error || "Failed to reserve tickets"
+    );
+  }
+
+  const data: BatchReserveTicketsResponse = await response.json();
+  return data.reservationIds;
 }

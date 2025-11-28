@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { UpcomingEventItem } from "@/types/event";
-import { reserveTickets } from "@/lib/api/tickets";
+import { reserveTicketsBatch } from "@/lib/api/tickets";
 
 interface UseTicketCheckoutProps {
   currentEvent: UpcomingEventItem | null;
@@ -28,23 +28,28 @@ export function useTicketCheckout({
         // Update context state
         setSelectedTickets(selections);
 
-        // Reserve all selected tickets before navigating
-        const reservationPromises = Object.entries(selections)
+        // Prepare reservations array from selections
+        const reservations = Object.entries(selections)
           .filter(([, quantity]) => quantity > 0)
           .map(([ticketId, quantity]) => {
             const tierIndex = Number.parseInt(
               ticketId.replace("ticket-", ""),
               10
             );
-            return reserveTickets({
-              eventId: currentEvent.id,
+            return {
               tierIndex,
               quantity,
-            });
+            };
           });
 
-        // Wait for all reservations to complete
-        await Promise.all(reservationPromises);
+        // Reserve all selected tickets atomically in a single batch operation
+        // This prevents race conditions when reserving multiple tickets
+        if (reservations.length > 0) {
+          await reserveTicketsBatch({
+            eventId: currentEvent.id,
+            reservations,
+          });
+        }
 
         // Navigate to checkout
         router.push("/checkout");
