@@ -9,7 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProgressIndicator } from "@/components/payment";
-import { ContactForm, AttendeeCard } from "@/components/checkout";
+import {
+  ContactForm,
+  AttendeeCard,
+  EmptyCartState,
+} from "@/components/checkout";
 import { CHECKOUT_STEPS } from "@/constants/checkout";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTicket } from "@/contexts/ticket-context";
@@ -60,6 +64,15 @@ export default function CheckoutPage() {
   useEffect(() => {
     const newAttendees: CheckoutFormInput["attendees"] = [];
 
+    if (!ticketSelections || ticketSelections.length === 0) {
+      replace(newAttendees);
+      form.reset({
+        contact: savedCheckoutData?.contact || form.getValues("contact"),
+        attendees: newAttendees,
+      });
+      return;
+    }
+
     for (const selection of ticketSelections) {
       for (let i = 0; i < selection.quantity; i++) {
         const ticketId = `${selection.ticketId}-${i}`;
@@ -95,6 +108,13 @@ export default function CheckoutPage() {
   });
 
   const handleBack = () => router.back();
+
+  // Check if there are no ticket selections
+  const hasNoTickets =
+    !ticketSelections || ticketSelections.length === 0 || fields.length === 0;
+
+  // Empty state UI
+  if (hasNoTickets) return <EmptyCartState onBrowseEvents={handleBack} />;
 
   return (
     <section className="relative overflow-hidden pt-8 pb-16 min-h-screen">
