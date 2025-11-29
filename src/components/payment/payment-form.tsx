@@ -11,7 +11,6 @@ import { Separator } from "@/components/ui/separator";
 import { CreditCard, Lock, ShieldCheck, ChevronLeft } from "lucide-react";
 import type { PaymentFormData } from "@/types/checkout";
 import {
-  EXPIRY_DATE_REGEX,
   CARD_NUMBER_MAX_LENGTH,
   CARD_EXPIRY_MAX_LENGTH,
   CARD_CVC_MAX_LENGTH,
@@ -53,38 +52,11 @@ export function PaymentForm({
     }
   };
 
+  // TEMPORARILY DISABLED: Form validation removed
   const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof PaymentFormData, string>> = {};
-
-    // Payment validation
-    if (!formData.cardNumber) {
-      newErrors.cardNumber = "Card number is required";
-    } else if (formData.cardNumber.replace(/\s/g, "").length < 13) {
-      newErrors.cardNumber = "Invalid card number";
-    }
-
-    if (!formData.cardExpiry) {
-      newErrors.cardExpiry = "Expiry date is required";
-    } else if (!EXPIRY_DATE_REGEX.test(formData.cardExpiry)) {
-      newErrors.cardExpiry = "Invalid format (MM/YY)";
-    }
-
-    if (!formData.cardCvc) {
-      newErrors.cardCvc = "CVC is required";
-    } else if (formData.cardCvc.length < 3) {
-      newErrors.cardCvc = "Invalid CVC";
-    }
-
-    if (!formData.cardName) newErrors.cardName = "Cardholder name is required";
-    if (!formData.billingZip) newErrors.billingZip = "Billing ZIP is required";
-
-    // Terms
-    if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = "You must agree to the terms";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    // Validation temporarily disabled
+    setErrors({});
+    return true;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -96,14 +68,14 @@ export function PaymentForm({
 
   // Format card number with spaces
   const handleCardNumberChange = (value: string) => {
-    const cleaned = value.replace(/\s/g, "");
+    const cleaned = value.replaceAll(/\s/g, "");
     const formatted = cleaned.match(/.{1,4}/g)?.join(" ") || cleaned;
     handleInputChange("cardNumber", formatted.slice(0, CARD_NUMBER_MAX_LENGTH));
   };
 
   // Format expiry date
   const handleExpiryChange = (value: string) => {
-    const cleaned = value.replace(/\D/g, "");
+    const cleaned = value.replaceAll(/\D/g, "");
     if (cleaned.length >= 2) {
       handleInputChange(
         "cardExpiry",

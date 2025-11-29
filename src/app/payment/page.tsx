@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -10,54 +10,105 @@ import {
 } from "@/components/payment";
 import { PaymentFormData } from "@/types/checkout";
 import { CHECKOUT_STEPS, calculateProcessingFee } from "@/constants/checkout";
+import { useTicket } from "@/contexts/ticket-context";
+import type { TicketSelection } from "@/types/checkout";
+import { useAppSelector } from "@/store/hooks";
+import type { CompletePurchaseData } from "@/types/purchase";
 
 export default function PaymentPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    currentEvent,
+    ticketSelections,
+    subtotal: contextSubtotal,
+  } = useTicket();
+  const savedCheckoutData = useAppSelector((state) => state.checkout.formData);
 
-  // TODO: Replace with actual data from URL params or state management
-  // Example: const searchParams = useSearchParams();
-  // const eventId = searchParams.get('eventId');
-  // Then fetch event and ticket data from API
-  const mockEventData = {
-    eventTitle: "Bollywood Night 2025",
-    eventDate: "March 15, 2025 • 8:00 PM",
-    eventLocation: "Student Union Ballroom",
-    tickets: [
-      {
-        id: "general",
-        name: "General Admission",
-        price: 25.0,
-        quantity: 2,
-      },
-      {
-        id: "vip",
-        name: "VIP Pass",
-        price: 50.0,
-        quantity: 1,
-      },
-    ],
-    promoCode: "WELCOME10",
-  };
+  // Transform ticket selections to match OrderSummary format
+  const tickets: TicketSelection[] = useMemo(() => {
+    if (!ticketSelections || ticketSelections.length === 0) return [];
 
-  const subtotal = mockEventData.tickets.reduce(
-    (sum, ticket) => sum + ticket.price * ticket.quantity,
-    0
-  );
+    return ticketSelections.map((selection) => ({
+      id: selection.ticketId,
+      name: selection.ticketName,
+      price: selection.pricePerTicket,
+      quantity: selection.quantity,
+    }));
+  }, [ticketSelections]);
 
-  // TODO: Replace with actual discount calculation from API
-  const discount = mockEventData.promoCode ? subtotal * 0.1 : 0;
+  // Format event date
+  const eventDate = useMemo(() => {
+    if (!currentEvent) return "";
+    const startDate = new Date(currentEvent.start_date);
+    const endDate = currentEvent.end_date
+      ? new Date(currentEvent.end_date)
+      : null;
 
-  // TODO: Replace with actual processing fee calculation from API
-  // Using Stripe's standard fee: 2.9% + $0.30
+    const dateStr = startDate.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    const startTime = startDate.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    if (endDate) {
+      const endTime = endDate.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+      return `${dateStr} • ${startTime} - ${endTime}`;
+    }
+
+    return `${dateStr} • ${startTime}`;
+  }, [currentEvent]);
+
+  // Format event location
+  const eventLocation = useMemo(() => {
+    if (!currentEvent) return "";
+    const parts: string[] = [];
+    if (currentEvent.venue_name) parts.push(currentEvent.venue_name);
+    if (currentEvent.venue_city) parts.push(currentEvent.venue_city);
+    return parts.length > 0 ? parts.join(", ") : "TBA";
+  }, [currentEvent]);
+
+  // Calculate totals
+  const subtotal = contextSubtotal;
+  const discount = 0; // TODO: Implement promo code system
   const processingFee = calculateProcessingFee(subtotal - discount);
-
   const total = subtotal - discount + processingFee;
+
+  // Redirect if no event or tickets selected
+  useEffect(() => {
+    if (!currentEvent || tickets.length === 0) {
+      router.push("/events");
+    }
+  }, [currentEvent, tickets.length, router]);
+
+  // Show loading state while redirecting
+  if (!currentEvent || tickets.length === 0) {
+    return null;
+  }
 
   const handleFormSubmit = async (formData: PaymentFormData) => {
     setIsSubmitting(true);
 
     try {
+      if (!savedCheckoutData) {
+        // If we somehow reach payment without attendee/contact info, send user back
+        alert(
+          "We need your contact and attendee details before completing payment."
+        );
+        router.push("/checkout");
+        return;
+      }
+
       // TODO: Replace with actual API call to process payment
       // Should combine payment data with attendee info from previous step
       // Example API call:
@@ -83,10 +134,86 @@ export default function PaymentPage() {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       console.log("Form submitted:", formData);
-      console.log("Order details:", { mockEventData, total });
+      console.log("Order details:", {
+        eventId: currentEvent.id,
+        eventTitle: currentEvent.title,
+        tickets,
+        total,
+      });
+
+      // Call purchase completion API before navigating to confirmation
+      const payload: CompletePurchaseData = {
+        eventId: currentEvent.id,
+        ticketSelections: ticketSelections.map((selection) => {
+          const tierIndex = Number.parseInt(
+            selection.ticketId.replace("ticket-", ""),
+            10
+          );
+
+          return {
+            ticketId: selection.ticketId,
+            ticketName: selection.ticketName,
+            tierIndex: Number.isNaN(tierIndex) ? 0 : tierIndex,
+            pricePerTicket: selection.pricePerTicket,
+            quantity: selection.quantity,
+          };
+        }),
+        attendeeInfo: savedCheckoutData.attendees.map((attendee) => ({
+          ticketId: attendee.ticketId,
+          firstName: attendee.firstName,
+          lastName: attendee.lastName,
+          email: attendee.email,
+        })),
+        contactInfo: {
+          firstName: savedCheckoutData.contact.firstName,
+          lastName: savedCheckoutData.contact.lastName,
+          email: savedCheckoutData.contact.email,
+          phone: savedCheckoutData.contact.phone,
+        },
+        paymentInfo: {
+          subtotal,
+          discount,
+          processingFee,
+          total,
+          // Stripe IDs will be filled in once Stripe integration is wired up
+          paymentStatus: "succeeded",
+        },
+        billingInfo: {
+          zip: formData.billingZip,
+        },
+        // Promo code support can be added here when implemented
+        promoCode: undefined,
+      };
+
+      const response = await fetch("/api/purchase/complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        console.error("Purchase completion failed:", errorBody);
+        alert(
+          errorBody?.message ||
+            "We couldn't complete your purchase. Please try again."
+        );
+        return;
+      }
+
+      const result = (await response.json()) as {
+        success?: boolean;
+        orderId: string;
+        orderNumber: string;
+      };
 
       // Navigate to confirmation page
-      router.push("/confirmation?orderId=mock-order-123");
+
+      router.push(
+        `/confirmation?orderId=${result.orderNumber || result.orderId}`
+      );
     } catch (error) {
       console.error("Payment error:", error);
       // TODO: Show error message to user
@@ -137,15 +264,14 @@ export default function PaymentPage() {
           {/* Right Column - Order Summary (1/3 width) */}
           <div className="lg:col-span-1">
             <OrderSummary
-              eventTitle={mockEventData.eventTitle}
-              eventDate={mockEventData.eventDate}
-              eventLocation={mockEventData.eventLocation}
-              tickets={mockEventData.tickets}
+              eventTitle={currentEvent.title}
+              eventDate={eventDate}
+              eventLocation={eventLocation}
+              tickets={tickets}
               subtotal={subtotal}
               discount={discount}
               processingFee={processingFee}
               total={total}
-              promoCode={mockEventData.promoCode}
             />
           </div>
         </div>

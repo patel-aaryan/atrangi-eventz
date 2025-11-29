@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ProgressIndicator } from "@/components/payment";
 import {
@@ -12,33 +12,117 @@ import {
   PaymentSummaryCard,
   QRCodeCard,
 } from "@/components/confirmation";
-import { CHECKOUT_STEPS } from "@/constants/checkout";
+import { CHECKOUT_STEPS, calculateProcessingFee } from "@/constants/checkout";
+import { useTicket } from "@/contexts/ticket-context";
+import { useAppSelector } from "@/store/hooks";
 import { Download, Home } from "lucide-react";
 import confetti from "canvas-confetti";
 
-export default function ConfirmationPage() {
+interface ConfirmationOrder {
+  orderId: string;
+  eventName: string;
+  eventDate: string;
+  eventTime: string;
+  eventLocation: string;
+  contactEmail: string;
+  tickets: Array<{ id: string; name: string; quantity: number; price: number }>;
+  subtotal: number;
+  discount: number;
+  processingFee: number;
+  total: number;
+  promoCode?: string;
+}
+
+function ConfirmationContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showContent, setShowContent] = useState(false);
 
-  // TODO: Fetch order details from URL params or state management
-  // Example: const searchParams = useSearchParams();
-  // const orderId = searchParams.get('orderId');
-  const mockOrder = {
-    orderId: "ATR-2024-001234",
-    eventName: "Summer Music Festival 2024",
-    eventDate: "July 15, 2024",
-    eventTime: "6:00 PM - 11:00 PM",
-    eventLocation: "Central Park Amphitheater, New York",
-    contactEmail: "john.doe@example.com",
-    tickets: [
-      { id: "1", name: "General Admission", quantity: 2, price: 49.99 },
-      { id: "2", name: "VIP Pass", quantity: 1, price: 149.99 },
-    ],
-    subtotal: 249.97,
-    discount: 24.99,
-    processingFee: 7.5,
-    total: 232.48,
-    promoCode: "WELCOME10",
+  const orderIdFromUrl = searchParams.get("orderId") ?? "Unknown";
+
+  const {
+    currentEvent,
+    ticketSelections,
+    subtotal: contextSubtotal,
+  } = useTicket();
+  const savedCheckoutData = useAppSelector((state) => state.checkout.formData);
+
+  // If user lands here without an event or tickets, send them back to events
+  useEffect(() => {
+    if (!currentEvent || ticketSelections.length === 0) {
+      router.push("/events");
+    }
+  }, [currentEvent, ticketSelections.length, router]);
+
+  const subtotal = contextSubtotal;
+  const discount = 0;
+  const processingFee = calculateProcessingFee(subtotal - discount);
+  const total = subtotal - discount + processingFee;
+
+  const eventDateTime = useMemo(() => {
+    if (!currentEvent) {
+      return { eventDate: "", eventTime: "" };
+    }
+
+    const startDate = new Date(currentEvent.start_date);
+    const endDate = currentEvent.end_date
+      ? new Date(currentEvent.end_date)
+      : null;
+
+    const dateStr = startDate.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    const startTime = startDate.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    let timeStr = startTime;
+    if (endDate) {
+      const endTime = endDate.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+      timeStr = `${startTime} - ${endTime}`;
+    }
+
+    return {
+      eventDate: dateStr,
+      eventTime: timeStr,
+    };
+  }, [currentEvent]);
+
+  const eventLocation = useMemo(() => {
+    if (!currentEvent) return "TBA";
+    const parts: string[] = [];
+    if (currentEvent.venue_name) parts.push(currentEvent.venue_name);
+    if (currentEvent.venue_city) parts.push(currentEvent.venue_city);
+    return parts.length > 0 ? parts.join(", ") : "TBA";
+  }, [currentEvent]);
+
+  const confirmationOrder: ConfirmationOrder = {
+    orderId: orderIdFromUrl,
+    eventName: currentEvent?.title ?? "Your Event",
+    eventDate: eventDateTime.eventDate,
+    eventTime: eventDateTime.eventTime,
+    eventLocation,
+    contactEmail: savedCheckoutData?.contact.email ?? "",
+    tickets: ticketSelections.map((selection) => ({
+      id: selection.ticketId,
+      name: selection.ticketName,
+      quantity: selection.quantity,
+      price: selection.pricePerTicket,
+    })),
+    subtotal,
+    discount,
+    processingFee,
+    total,
+    promoCode: undefined,
   };
 
   useEffect(() => {
@@ -96,8 +180,8 @@ export default function ConfirmationPage() {
     if (navigator.share) {
       navigator
         .share({
-          title: mockOrder.eventName,
-          text: `I'm attending ${mockOrder.eventName}!`,
+          title: confirmationOrder.eventName,
+          text: `I'm attending ${confirmationOrder.eventName}!`,
           url: window.location.origin + "/events",
         })
         .catch(console.error);
@@ -115,7 +199,7 @@ export default function ConfirmationPage() {
         <ProgressIndicator currentStep={4} steps={CHECKOUT_STEPS} />
 
         {/* Success Header */}
-        <SuccessHeader contactEmail={mockOrder.contactEmail} />
+        <SuccessHeader contactEmail={confirmationOrder.contactEmail} />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -135,17 +219,17 @@ export default function ConfirmationPage() {
               className="flex flex-col gap-6 h-full"
             >
               <OrderHeader
-                orderId={mockOrder.orderId}
+                orderId={confirmationOrder.orderId}
                 onDownload={handleDownloadTickets}
                 onShare={handleShareEvent}
               />
 
               <EventDetailsCard
-                eventName={mockOrder.eventName}
-                eventDate={mockOrder.eventDate}
-                eventTime={mockOrder.eventTime}
-                eventLocation={mockOrder.eventLocation}
-                tickets={mockOrder.tickets}
+                eventName={confirmationOrder.eventName}
+                eventDate={confirmationOrder.eventDate}
+                eventTime={confirmationOrder.eventTime}
+                eventLocation={confirmationOrder.eventLocation}
+                tickets={confirmationOrder.tickets}
               />
             </motion.div>
 
@@ -160,14 +244,17 @@ export default function ConfirmationPage() {
               className="flex flex-col gap-6 h-full"
             >
               <PaymentSummaryCard
-                subtotal={mockOrder.subtotal}
-                discount={mockOrder.discount}
-                processingFee={mockOrder.processingFee}
-                total={mockOrder.total}
-                promoCode={mockOrder.promoCode}
+                subtotal={confirmationOrder.subtotal}
+                discount={confirmationOrder.discount}
+                processingFee={confirmationOrder.processingFee}
+                total={confirmationOrder.total}
+                promoCode={confirmationOrder.promoCode}
               />
 
-              <QRCodeCard contactEmail={mockOrder.contactEmail} />
+              <QRCodeCard
+                contactEmail={confirmationOrder.contactEmail}
+                qrCodeValue={confirmationOrder.orderId}
+              />
             </motion.div>
           </div>
 
@@ -194,5 +281,26 @@ export default function ConfirmationPage() {
         </motion.div>
       </div>
     </section>
+  );
+}
+
+export default function ConfirmationPage() {
+  return (
+    <Suspense
+      fallback={
+        <section className="relative overflow-hidden pt-8 pb-16 min-h-screen">
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-pink-500/10" />
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+            <p className="text-muted-foreground text-lg">
+              Loading your confirmation...
+            </p>
+          </div>
+        </section>
+      }
+    >
+      <ConfirmationContent />
+    </Suspense>
   );
 }

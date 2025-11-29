@@ -7,6 +7,10 @@ type LoadedState = {
 
 // Session storage persistence helper
 const loadState = () => {
+  // Check if we're in the browser environment
+  if (typeof window === "undefined") {
+    return undefined;
+  }
   try {
     const serializedState = sessionStorage.getItem("reduxState");
     if (serializedState === null) {
@@ -25,6 +29,10 @@ export const store = configureStore({
 });
 
 store.subscribe(() => {
+  // Check if we're in the browser environment
+  if (typeof window === "undefined") {
+    return;
+  }
   try {
     const serializedState = JSON.stringify(store.getState());
     sessionStorage.setItem("reduxState", serializedState);

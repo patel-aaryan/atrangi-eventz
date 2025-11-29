@@ -3,6 +3,14 @@ import { render } from "@react-email/render";
 import VerificationEmail from "../emails/VerificationEmail";
 import WelcomeEmail from "../emails/WelcomeEmail";
 import PasswordResetEmail from "../emails/PasswordResetEmail";
+import TicketConfirmationEmail from "../emails/TicketConfirmationEmail";
+import { PdfService } from "./pdf.service";
+
+export interface EmailAttachment {
+  filename: string;
+  data: Buffer | string;
+  contentType?: string;
+}
 
 export interface EmailOptions {
   to: string | string[];
@@ -10,16 +18,19 @@ export interface EmailOptions {
   text?: string;
   html?: string;
   from?: string;
+  attachments?: EmailAttachment[];
 }
 
 export class EmailService {
-  private domain: string;
-  private defaultFrom: string;
+  private readonly domain: string;
+  private readonly defaultFrom: string;
+  private readonly pdfService: PdfService;
 
   constructor() {
     this.domain = process.env.MAILGUN_DOMAIN || "";
     this.defaultFrom =
       process.env.MAILGUN_FROM_EMAIL || `noreply@${this.domain}`;
+    this.pdfService = new PdfService();
 
     if (!this.domain) {
       console.warn("MAILGUN_DOMAIN is not set in environment variables");
@@ -34,6 +45,14 @@ export class EmailService {
         subject: options.subject,
         ...(options.text && { text: options.text }),
         ...(options.html && { html: options.html }),
+        ...(options.attachments &&
+          options.attachments.length > 0 && {
+            attachment: options.attachments.map((attachment) => ({
+              filename: attachment.filename,
+              data: attachment.data,
+              contentType: attachment.contentType,
+            })),
+          }),
       };
 
       const response = await mg.messages.create(
@@ -86,6 +105,71 @@ export class EmailService {
       subject: "Welcome to Atrangi Eventz! 🎉",
       html,
       text,
+    });
+  }
+
+  async sendTicketConfirmationEmail(data: {
+    to: string;
+    orderNumber: string;
+    eventTitle: string;
+    eventDate: string;
+    eventLocation: string;
+    tickets: Array<{
+      ticketCode: string;
+      attendeeName: string;
+      attendeeEmail: string;
+      tierName: string;
+      price: number;
+      qrCodeData: string;
+    }>;
+    orderTotal: number;
+    buyerName: string;
+  }): Promise<void> {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+    const pdf = await this.pdfService.generateTicketsPdf({
+      orderNumber: data.orderNumber,
+      eventTitle: data.eventTitle,
+      eventDate: data.eventDate,
+      eventLocation: data.eventLocation,
+      buyerName: data.buyerName,
+      tickets: data.tickets,
+    });
+
+    const html = await render(
+      <TicketConfirmationEmail
+        orderNumber={data.orderNumber}
+        eventTitle={data.eventTitle}
+        eventDate={data.eventDate}
+        eventLocation={data.eventLocation}
+        tickets={data.tickets}
+        orderTotal={data.orderTotal}
+        buyerName={data.buyerName}
+        appUrl={appUrl}
+      />
+    );
+
+    const ticketsList = data.tickets
+      .map(
+        (t, i) =>
+          `${i + 1}. ${t.tierName} - ${t.attendeeName} (${t.ticketCode})`
+      )
+      .join("\n");
+
+    const text = `Your tickets for ${data.eventTitle} have been confirmed!\n\nOrder Number: ${data.orderNumber}\n\nTickets:\n${ticketsList}\n\nTotal: $${data.orderTotal.toFixed(2)} CAD\n\nView your tickets: ${appUrl}/confirmation?orderId=${data.orderNumber}`;
+
+    await this.sendEmail({
+      to: data.to,
+      subject: `🎟️ Your Tickets for ${data.eventTitle} - Order ${data.orderNumber}`,
+      html,
+      text,
+      attachments: [
+        {
+          filename: pdf.filename,
+          data: pdf.buffer,
+          contentType: pdf.contentType,
+        },
+      ],
     });
   }
 }

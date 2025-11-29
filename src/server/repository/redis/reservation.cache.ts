@@ -136,6 +136,39 @@ export class ReservationCache {
   }
 
   /**
+   * Delete all reservations for a given event and session
+   * Used after a successful ticket purchase to clear the cache
+   */
+  async deleteReservationsBySession(
+    eventId: string,
+    sessionId: string
+  ): Promise<void> {
+    try {
+      const keys = await this.getReservationKeys(eventId);
+      if (!keys.length) return;
+
+      // Load reservation data for each key so we can filter by sessionId
+      const entries = await Promise.all(
+        keys.map(async (key) => {
+          const value = await redis.get<ReservationData>(key);
+          return { key, value };
+        })
+      );
+
+      const keysToDelete = entries
+        .filter((entry) => entry.value?.sessionId === sessionId)
+        .map((entry) => entry.key);
+
+      if (keysToDelete.length > 0) {
+        await redis.del(...keysToDelete);
+      }
+    } catch (error) {
+      console.error("Error deleting reservations by session:", error);
+      // Don't throw - cache cleanup failures shouldn't break the app
+    }
+  }
+
+  /**
    * Create a new reservation
    * Returns the reservation ID (UUID)
    */
@@ -197,6 +230,48 @@ export class ReservationCache {
     } catch (error) {
       console.error("Error deleting reservation:", error);
       // Don't throw - deletion failures shouldn't break the app
+    }
+  }
+
+  /**
+   * Create multiple reservations atomically
+   * Returns array of reservation IDs
+   */
+  async createReservations(
+    eventId: string,
+    sessionId: string,
+    reservations: Array<{ quantity: number; tierIndex: number }>
+  ): Promise<string[]> {
+    try {
+      const reservationIds: string[] = [];
+      const reservationPromises: Promise<unknown>[] = [];
+
+      for (const reservation of reservations) {
+        const reservationId = crypto.randomUUID();
+        reservationIds.push(reservationId);
+        const reservationKey = `${this.RESERVATION_KEY_PREFIX}${eventId}:${reservationId}`;
+
+        const reservationData: ReservationData = {
+          sessionId,
+          quantity: reservation.quantity,
+          tierIndex: reservation.tierIndex,
+        };
+
+        // Store reservation with TTL
+        reservationPromises.push(
+          redis.set(reservationKey, reservationData, {
+            ex: this.RESERVATION_TTL,
+          })
+        );
+      }
+
+      // Create all reservations in parallel
+      await Promise.all(reservationPromises);
+
+      return reservationIds;
+    } catch (error) {
+      console.error("Error creating batch reservations:", error);
+      throw new Error("Failed to create batch reservations");
     }
   }
 }

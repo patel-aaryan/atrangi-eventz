@@ -58,7 +58,6 @@ CREATE TABLE IF NOT EXISTS orders (
 );
 
 -- Create indexes for better query performance
-CREATE INDEX idx_orders_order_number ON orders(order_number);
 CREATE INDEX idx_orders_status ON orders(status);
 
 -- Create unique constraint on (id, order_number) for composite foreign key from tickets
