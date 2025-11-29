@@ -68,8 +68,10 @@ export class TicketService {
 
     for (const selection of data.ticketSelections) {
       // Find attendees for this ticket type
+      // Use an exact prefix with a delimiter to avoid matching tiers with shared prefixes
+      // e.g. ensure "ticket-1" does not match "ticket-10-0"
       const attendeesForTicket = data.attendeeInfo.filter((attendee) =>
-        attendee.ticketId.startsWith(selection.ticketId)
+        attendee.ticketId.startsWith(`${selection.ticketId}-`)
       );
 
       for (let i = 0; i < selection.quantity; i++) {
