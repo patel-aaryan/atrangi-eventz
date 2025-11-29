@@ -30,7 +30,7 @@ export function OrderSummary({
   processingFee,
   total,
   promoCode,
-}: OrderSummaryProps) {
+}: Readonly<OrderSummaryProps>) {
   const totalTickets = tickets.reduce(
     (sum, ticket) => sum + ticket.quantity,
     0

@@ -1,0 +1,175 @@
+import { OrderRepository } from "@/server/repository/postgres/order.repository";
+import { TicketRepository } from "@/server/repository/postgres/ticket.repository";
+import { EventRepository } from "@/server/repository/postgres/event.repository";
+import { EmailService } from "./email.service";
+import QRCode from "qrcode";
+import type { CreateOrderData } from "@/types/order";
+import type { CreateTicketData } from "@/types/ticket";
+import type {
+  CompletePurchaseData,
+  CompletePurchaseResult,
+} from "@/types/purchase";
+
+/**
+ * Ticket Service - Contains business logic for ticket purchases
+ */
+export class TicketService {
+  private readonly orderRepository: OrderRepository;
+  private readonly ticketRepository: TicketRepository;
+  private readonly eventRepository: EventRepository;
+  private readonly emailService: EmailService;
+
+  constructor() {
+    this.orderRepository = new OrderRepository();
+    this.ticketRepository = new TicketRepository();
+    this.eventRepository = new EventRepository();
+    this.emailService = new EmailService();
+  }
+
+  /**
+   * Complete a ticket purchase
+   * Creates order, tickets, generates QR codes, and sends confirmation email
+   */
+  async completePurchase(
+    data: CompletePurchaseData
+  ): Promise<CompletePurchaseResult> {
+    // 1. Validate event exists
+    const event = await this.eventRepository.findById(data.eventId);
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    // 2. Create order
+    const orderData: CreateOrderData = {
+      subtotal: data.paymentInfo.subtotal,
+      discount: data.paymentInfo.discount,
+      processingFee: data.paymentInfo.processingFee,
+      total: data.paymentInfo.total,
+      currency: "CAD",
+      buyerFirstName: data.contactInfo.firstName,
+      buyerLastName: data.contactInfo.lastName,
+      buyerEmail: data.contactInfo.email,
+      buyerPhone: data.contactInfo.phone,
+      billingZip: data.billingInfo?.zip,
+      billingAddress: data.billingInfo?.address,
+      promoCode: data.promoCode,
+      discountAmount: data.paymentInfo.discount,
+      stripePaymentIntentId: data.paymentInfo.stripePaymentIntentId,
+      stripeChargeId: data.paymentInfo.stripeChargeId,
+      stripePaymentMethodId: data.paymentInfo.stripePaymentMethodId,
+      stripeCustomerId: data.paymentInfo.stripeCustomerId,
+      paymentStatus: data.paymentInfo.paymentStatus || "succeeded",
+    };
+
+    const order = await this.orderRepository.create(orderData);
+
+    // 3. Create tickets
+    const ticketDataList: CreateTicketData[] = [];
+
+    for (const selection of data.ticketSelections) {
+      // Find attendees for this ticket type
+      const attendeesForTicket = data.attendeeInfo.filter((attendee) =>
+        attendee.ticketId.startsWith(selection.ticketId)
+      );
+
+      for (let i = 0; i < selection.quantity; i++) {
+        const attendee = attendeesForTicket[i] || {
+          firstName: data.contactInfo.firstName,
+          lastName: data.contactInfo.lastName,
+          email: data.contactInfo.email,
+        };
+
+        ticketDataList.push({
+          eventId: data.eventId,
+          orderId: order.id,
+          orderNumber: order.order_number,
+          orderSubtotal: data.paymentInfo.subtotal,
+          orderDiscount: data.paymentInfo.discount,
+          orderProcessingFee: data.paymentInfo.processingFee,
+          orderTotal: data.paymentInfo.total,
+          tierName: selection.ticketName,
+          tierIndex: selection.tierIndex,
+          priceAtPurchase: selection.pricePerTicket,
+          attendeeFirstName: attendee.firstName,
+          attendeeLastName: attendee.lastName,
+          attendeeEmail: attendee.email,
+          buyerFirstName: data.contactInfo.firstName,
+          buyerLastName: data.contactInfo.lastName,
+          buyerEmail: data.contactInfo.email,
+          buyerPhone: data.contactInfo.phone,
+          billingZip: data.billingInfo?.zip,
+          billingAddress: data.billingInfo?.address,
+          amountPaid: selection.pricePerTicket,
+          currency: "CAD",
+          stripePaymentIntentId: data.paymentInfo.stripePaymentIntentId,
+          stripeChargeId: data.paymentInfo.stripeChargeId,
+          stripePaymentMethodId: data.paymentInfo.stripePaymentMethodId,
+          stripeCustomerId: data.paymentInfo.stripeCustomerId,
+          paymentStatus: data.paymentInfo.paymentStatus || "succeeded",
+        });
+      }
+    }
+
+    // Create all tickets
+    const createdTickets = await this.ticketRepository.createBatch(
+      ticketDataList
+    );
+
+    // 4. Generate and update QR codes with actual ticket codes
+    const ticketsWithQRCodes = await Promise.all(
+      createdTickets.map(async (ticket) => {
+        // Generate QR code with ticket code
+        const qrCodeData = await QRCode.toDataURL(ticket.ticket_code);
+
+        // Update ticket with QR code and confirm status
+        const updatedTicket = await this.ticketRepository.updateQrCodeAndStatus(
+          ticket.id,
+          qrCodeData,
+          "confirmed"
+        );
+
+        return updatedTicket;
+      })
+    );
+
+    // 5. Update order status to confirmed
+    await this.orderRepository.updateStatus(order.id, "confirmed");
+
+    // 6. Prepare event location for email
+    const eventLocation =
+      event.venue_name && event.venue_city
+        ? `${event.venue_name}, ${event.venue_city}`
+        : event.venue_name || event.venue_city || "TBA";
+
+    // 7. Send confirmation email
+    await this.emailService.sendTicketConfirmationEmail({
+      to: data.contactInfo.email,
+      orderNumber: order.order_number,
+      eventTitle: event.title,
+      eventDate: event.start_date,
+      eventLocation,
+      tickets: ticketsWithQRCodes.map((ticket) => ({
+        ticketCode: ticket.ticket_code,
+        attendeeName: `${ticket.attendee_first_name} ${ticket.attendee_last_name}`,
+        attendeeEmail: ticket.attendee_email,
+        tierName: ticket.tier_name,
+        price: ticket.price_at_purchase,
+        qrCodeData: ticket.qr_code_data!,
+      })),
+      orderTotal: data.paymentInfo.total,
+      buyerName: `${data.contactInfo.firstName} ${data.contactInfo.lastName}`,
+    });
+
+    return {
+      orderId: order.id,
+      orderNumber: order.order_number,
+      tickets: ticketsWithQRCodes.map((ticket) => ({
+        id: ticket.id,
+        ticketCode: ticket.ticket_code,
+        attendeeName: `${ticket.attendee_first_name} ${ticket.attendee_last_name}`,
+        attendeeEmail: ticket.attendee_email,
+      })),
+    };
+  }
+}
+

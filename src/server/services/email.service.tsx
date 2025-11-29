@@ -3,6 +3,7 @@ import { render } from "@react-email/render";
 import VerificationEmail from "../emails/VerificationEmail";
 import WelcomeEmail from "../emails/WelcomeEmail";
 import PasswordResetEmail from "../emails/PasswordResetEmail";
+import TicketConfirmationEmail from "../emails/TicketConfirmationEmail";
 
 export interface EmailOptions {
   to: string | string[];
@@ -13,8 +14,8 @@ export interface EmailOptions {
 }
 
 export class EmailService {
-  private domain: string;
-  private defaultFrom: string;
+  private readonly domain: string;
+  private readonly defaultFrom: string;
 
   constructor() {
     this.domain = process.env.MAILGUN_DOMAIN || "";
@@ -84,6 +85,47 @@ export class EmailService {
     await this.sendEmail({
       to,
       subject: "Welcome to Atrangi Eventz! 🎉",
+      html,
+      text,
+    });
+  }
+
+  async sendTicketConfirmationEmail(data: {
+    to: string;
+    orderNumber: string;
+    eventTitle: string;
+    eventDate: string;
+    eventLocation: string;
+    tickets: Array<{
+      ticketCode: string;
+      attendeeName: string;
+      attendeeEmail: string;
+      tierName: string;
+      price: number;
+      qrCodeData: string;
+    }>;
+    orderTotal: number;
+    buyerName: string;
+  }): Promise<void> {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const html = await render(
+      <TicketConfirmationEmail
+        orderNumber={data.orderNumber}
+        eventTitle={data.eventTitle}
+        eventDate={data.eventDate}
+        eventLocation={data.eventLocation}
+        tickets={data.tickets}
+        orderTotal={data.orderTotal}
+        buyerName={data.buyerName}
+        appUrl={appUrl}
+      />
+    );
+
+    const text = `Your tickets for ${data.eventTitle} have been confirmed!\n\nOrder Number: ${data.orderNumber}\n\nTickets:\n${data.tickets.map((t, i) => `${i + 1}. ${t.tierName} - ${t.attendeeName} (${t.ticketCode})`).join("\n")}\n\nTotal: $${data.orderTotal.toFixed(2)} CAD\n\nView your tickets: ${appUrl}/confirmation?orderId=${data.orderNumber}`;
+
+    await this.sendEmail({
+      to: data.to,
+      subject: `🎟️ Your Tickets for ${data.eventTitle} - Order ${data.orderNumber}`,
       html,
       text,
     });

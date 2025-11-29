@@ -24,10 +24,6 @@ export const TRUST_SIGNALS = [
   { text: "All sales are final", color: "green" },
 ] as const;
 
-// Form Validation Patterns
-export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-export const EXPIRY_DATE_REGEX = /^\d{2}\/\d{2}$/;
-
 // Card Formatting
 export const CARD_NUMBER_MAX_LENGTH = 19; // 16 digits + 3 spaces
 export const CARD_EXPIRY_MAX_LENGTH = 5; // MM/YY
