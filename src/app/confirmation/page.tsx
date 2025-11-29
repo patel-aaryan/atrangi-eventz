@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ interface ConfirmationOrder {
   promoCode?: string;
 }
 
-export default function ConfirmationPage() {
+function ConfirmationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showContent, setShowContent] = useState(false);
@@ -281,5 +281,26 @@ export default function ConfirmationPage() {
         </motion.div>
       </div>
     </section>
+  );
+}
+
+export default function ConfirmationPage() {
+  return (
+    <Suspense
+      fallback={
+        <section className="relative overflow-hidden pt-8 pb-16 min-h-screen">
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-pink-500/10" />
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+            <p className="text-muted-foreground text-lg">
+              Loading your confirmation...
+            </p>
+          </div>
+        </section>
+      }
+    >
+      <ConfirmationContent />
+    </Suspense>
   );
 }
