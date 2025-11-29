@@ -192,7 +192,7 @@ function TicketDocument({ payload }: Readonly<TicketDocumentProps>) {
   return (
     <Document>
       {payload.tickets.map((ticket) => (
-        <Page size="A4" style={styles.page} key={ticket.ticketCode}>
+        <Page size="LETTER" style={styles.page} key={ticket.ticketCode}>
           <View style={styles.ticketCard}>
             <View style={styles.headerRow}>
               <View>
