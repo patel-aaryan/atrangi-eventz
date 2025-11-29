@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { TicketService } from "@/server/services/ticket.service";
+import { ReservationService } from "@/server/services/reservation.service";
+import { getOrCreateSessionId } from "@/lib/api/session";
 
 /**
  * POST /api/purchase/complete
@@ -63,6 +65,20 @@ export async function POST(request: NextRequest) {
       billingInfo,
       promoCode,
     });
+
+    // After a successful purchase, clear any reservations for this session/event
+    // so the user's reserved tickets are removed from the cache.
+    try {
+      const sessionId = await getOrCreateSessionId();
+      const reservationService = new ReservationService();
+      await reservationService.clearReservationsForSession(eventId, sessionId);
+    } catch (cleanupError) {
+      // Log cleanup errors but don't fail the purchase response because of them
+      console.error(
+        "Failed to clear reservations after purchase:",
+        cleanupError
+      );
+    }
 
     return NextResponse.json(
       {

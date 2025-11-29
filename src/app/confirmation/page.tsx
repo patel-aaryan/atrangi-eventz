@@ -40,8 +40,11 @@ export default function ConfirmationPage() {
 
   const orderIdFromUrl = searchParams.get("orderId") ?? "Unknown";
 
-  const { currentEvent, ticketSelections, subtotal: contextSubtotal } =
-    useTicket();
+  const {
+    currentEvent,
+    ticketSelections,
+    subtotal: contextSubtotal,
+  } = useTicket();
   const savedCheckoutData = useAppSelector((state) => state.checkout.formData);
 
   // If user lands here without an event or tickets, send them back to events
@@ -248,7 +251,10 @@ export default function ConfirmationPage() {
                 promoCode={confirmationOrder.promoCode}
               />
 
-              <QRCodeCard contactEmail={confirmationOrder.contactEmail} />
+              <QRCodeCard
+                contactEmail={confirmationOrder.contactEmail}
+                qrCodeValue={confirmationOrder.orderId}
+              />
             </motion.div>
           </div>
 

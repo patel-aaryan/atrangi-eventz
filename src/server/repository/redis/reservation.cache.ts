@@ -136,6 +136,39 @@ export class ReservationCache {
   }
 
   /**
+   * Delete all reservations for a given event and session
+   * Used after a successful ticket purchase to clear the cache
+   */
+  async deleteReservationsBySession(
+    eventId: string,
+    sessionId: string
+  ): Promise<void> {
+    try {
+      const keys = await this.getReservationKeys(eventId);
+      if (!keys.length) return;
+
+      // Load reservation data for each key so we can filter by sessionId
+      const entries = await Promise.all(
+        keys.map(async (key) => {
+          const value = await redis.get<ReservationData>(key);
+          return { key, value };
+        })
+      );
+
+      const keysToDelete = entries
+        .filter((entry) => entry.value?.sessionId === sessionId)
+        .map((entry) => entry.key);
+
+      if (keysToDelete.length > 0) {
+        await redis.del(...keysToDelete);
+      }
+    } catch (error) {
+      console.error("Error deleting reservations by session:", error);
+      // Don't throw - cache cleanup failures shouldn't break the app
+    }
+  }
+
+  /**
    * Create a new reservation
    * Returns the reservation ID (UUID)
    */

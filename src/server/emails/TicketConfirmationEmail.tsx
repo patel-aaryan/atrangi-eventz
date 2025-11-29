@@ -7,6 +7,7 @@ interface Ticket {
   attendeeEmail: string;
   tierName: string;
   price: number;
+  qrCodeData: string;
 }
 
 interface Props {
@@ -98,9 +99,7 @@ export default function TicketConfirmationEmail({
           </p>
           <div style={{ marginTop: 15, textAlign: "center" }}>
             <img
-              src={`${appUrl}/api/tickets/${encodeURIComponent(
-                ticket.ticketCode
-              )}/qr`}
+              src={ticket.qrCodeData}
               alt={`QR Code for ${ticket.ticketCode}`}
               style={{ maxWidth: 200, height: "auto" }}
             />

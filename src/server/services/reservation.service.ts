@@ -140,6 +140,17 @@ export class ReservationService {
   }
 
   /**
+   * Clear all reservations for an event and session
+   * Used after a successful purchase so the cart is emptied in cache
+   */
+  async clearReservationsForSession(
+    eventId: string,
+    sessionId: string
+  ): Promise<void> {
+    await this.reservationCache.deleteReservationsBySession(eventId, sessionId);
+  }
+
+  /**
    * Reserve multiple tickets atomically in a single transaction
    * This prevents race conditions when reserving multiple tickets at once
    * All reservations succeed or all fail
