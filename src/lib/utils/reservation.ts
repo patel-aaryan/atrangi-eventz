@@ -41,6 +41,17 @@ export function validateBatchReservations(
       );
     }
 
+    // Match single-reservation validation: tierIndex must be non-negative
+    if (tierIndex < 0) {
+      return NextResponse.json(
+        {
+          error: "Invalid tierIndex",
+          message: "tierIndex must be a non-negative number",
+        },
+        { status: 400 }
+      );
+    }
+
     if (quantity <= 0) {
       return NextResponse.json(
         {
