@@ -67,22 +67,4 @@ export class EventService {
     console.log("✅ [Service] Database query complete");
     return event;
   }
-
-  /**
-   * Invalidate upcoming event cache
-   * Call this when event data changes (e.g., after admin updates)
-   */
-  async invalidateUpcomingEventCache(): Promise<void> {
-    console.log("🔄 [Service] Invalidating upcoming event cache...");
-    await this.eventCache.invalidateUpcomingEvent();
-  }
-
-  /**
-   * Invalidate past events cache
-   * Call this when event data changes (e.g., after admin updates)
-   */
-  async invalidatePastEventsCache(): Promise<void> {
-    console.log("🔄 [Service] Invalidating past events cache...");
-    await this.eventCache.invalidatePastEvents();
-  }
 }

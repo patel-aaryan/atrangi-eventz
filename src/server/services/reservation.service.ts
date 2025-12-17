@@ -76,11 +76,11 @@ export class ReservationService {
       );
     }
 
-    // Acquire lock for the event
-    const lockAcquired = await this.reservationCache.acquireLock(eventId);
+    // Acquire lock for the event with retry mechanism
+    const lockAcquired = await this.reservationCache.acquireLockWithRetry(eventId);
     if (!lockAcquired) {
       throw new Error(
-        "Event is currently being processed. Please wait and try again."
+        "Unable to process your request due to high demand. Please try again in a moment."
       );
     }
 
@@ -177,11 +177,11 @@ export class ReservationService {
       event.ticket_tiers
     );
 
-    // Acquire lock for the event
-    const lockAcquired = await this.reservationCache.acquireLock(eventId);
+    // Acquire lock for the event with retry mechanism
+    const lockAcquired = await this.reservationCache.acquireLockWithRetry(eventId);
     if (!lockAcquired) {
       throw new Error(
-        "Event is currently being processed. Please wait and try again."
+        "Unable to process your request due to high demand. Please try again in a moment."
       );
     }
 

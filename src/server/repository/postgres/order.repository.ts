@@ -78,20 +78,6 @@ export class OrderRepository {
   }
 
   /**
-   * Find an order by order number
-   */
-  async findByOrderNumber(orderNumber: string): Promise<Order | null> {
-    const query = `SELECT * FROM orders WHERE order_number = $1`;
-    const result = await pool.query(query, [orderNumber]);
-
-    if (result.rows.length === 0) {
-      return null;
-    }
-
-    return this.mapRowToOrder(result.rows[0]);
-  }
-
-  /**
    * Update order status
    */
   async updateStatus(
@@ -100,45 +86,6 @@ export class OrderRepository {
   ): Promise<Order> {
     const query = `UPDATE orders SET status = $1 WHERE id = $2 RETURNING *`;
     const result = await pool.query(query, [status, orderId]);
-
-    return this.mapRowToOrder(result.rows[0]);
-  }
-
-  /**
-   * Update payment information
-   */
-  async updatePaymentInfo(
-    orderId: string,
-    paymentInfo: {
-      stripeChargeId?: string;
-      stripePaymentMethodId?: string;
-      paymentStatus?: string;
-    }
-  ): Promise<Order> {
-    const updates: string[] = [];
-    const values: unknown[] = [];
-    let paramIndex = 1;
-
-    if (paymentInfo.stripeChargeId !== undefined) {
-      updates.push(`stripe_charge_id = $${paramIndex++}`);
-      values.push(paymentInfo.stripeChargeId);
-    }
-    if (paymentInfo.stripePaymentMethodId !== undefined) {
-      updates.push(`stripe_payment_method_id = $${paramIndex++}`);
-      values.push(paymentInfo.stripePaymentMethodId);
-    }
-    if (paymentInfo.paymentStatus !== undefined) {
-      updates.push(`payment_status = $${paramIndex++}`);
-      values.push(paymentInfo.paymentStatus);
-    }
-
-    if (updates.length === 0) {
-      throw new Error("No payment info provided to update");
-    }
-
-    values.push(orderId);
-    const query = `UPDATE orders SET ${updates.join(", ")} WHERE id = $${paramIndex} RETURNING *`;
-    const result = await pool.query(query, values);
 
     return this.mapRowToOrder(result.rows[0]);
   }

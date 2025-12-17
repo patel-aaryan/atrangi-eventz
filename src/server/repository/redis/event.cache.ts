@@ -92,20 +92,6 @@ export class EventCache {
   }
 
   /**
-   * Invalidate upcoming event cache
-   * Call this when event data changes (e.g., after admin updates)
-   */
-  async invalidateUpcomingEvent(): Promise<void> {
-    try {
-      console.log("🗑️ [Cache] Invalidating upcoming event cache...");
-      await redis.del(this.UPCOMING_EVENT_CACHE_KEY);
-      console.log("✅ [Cache] Cache invalidated successfully");
-    } catch (error) {
-      console.error("⚠️ [Cache] Error invalidating cache:", error);
-    }
-  }
-
-  /**
    * Get past events from cache
    * Returns undefined if not in cache
    */
@@ -156,20 +142,6 @@ export class EventCache {
     } catch (error) {
       console.error("⚠️ [Cache] Error writing past events to Redis:", error);
       // Don't throw - caching failures shouldn't break the app
-    }
-  }
-
-  /**
-   * Invalidate past events cache
-   * Call this when event data changes (e.g., after admin updates)
-   */
-  async invalidatePastEvents(): Promise<void> {
-    try {
-      console.log("🗑️ [Cache] Invalidating past events cache...");
-      await redis.del(this.PAST_EVENTS_CACHE_KEY);
-      console.log("✅ [Cache] Past events cache invalidated successfully");
-    } catch (error) {
-      console.error("⚠️ [Cache] Error invalidating past events cache:", error);
     }
   }
 }

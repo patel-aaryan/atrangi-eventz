@@ -27,46 +27,6 @@ export class TicketRepository {
   }
 
   /**
-   * Count all sold tickets for an event (across all tiers)
-   * Returns the total number of sold tickets
-   */
-  async countSoldTicketsByEvent(eventId: string): Promise<number> {
-    const query = `
-      SELECT COUNT(*) as count
-      FROM tickets
-      WHERE event_id = $1
-        AND status IN ('confirmed', 'pending')
-    `;
-
-    const result = await pool.query(query, [eventId]);
-
-    return Number.parseInt(result.rows[0]?.count || "0", 10);
-  }
-
-  /**
-   * Get sold ticket counts grouped by tier_index for an event
-   * Returns a map of tier_index -> count
-   */
-  async getSoldTicketsByTier(eventId: string): Promise<Record<number, number>> {
-    const query = `
-      SELECT tier_index, COUNT(*) as count
-      FROM tickets
-      WHERE event_id = $1
-        AND status IN ('confirmed', 'pending')
-      GROUP BY tier_index
-    `;
-
-    const result = await pool.query(query, [eventId]);
-
-    const counts: Record<number, number> = {};
-    for (const row of result.rows) {
-      counts[row.tier_index] = Number.parseInt(row.count || "0", 10);
-    }
-
-    return counts;
-  }
-
-  /**
    * Create a single ticket
    * Returns the created ticket with auto-generated ticket_code
    */
@@ -226,20 +186,6 @@ export class TicketRepository {
     const result = await pool.query(query, [orderId]);
 
     return result.rows.map((row) => this.mapRowToTicket(row));
-  }
-
-  /**
-   * Find ticket by ticket code
-   */
-  async findByTicketCode(ticketCode: string): Promise<Ticket | null> {
-    const query = `SELECT * FROM tickets WHERE ticket_code = $1`;
-    const result = await pool.query(query, [ticketCode]);
-
-    if (result.rows.length === 0) {
-      return null;
-    }
-
-    return this.mapRowToTicket(result.rows[0]);
   }
 
   /**
