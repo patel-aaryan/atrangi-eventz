@@ -21,7 +21,7 @@ interface CreatePaymentIntentResult {
 /**
  * Stripe Service - Handles Stripe payment operations
  */
-export class StripeService {
+class StripeService {
   private readonly stripe: Stripe;
 
   constructor() {
@@ -126,5 +126,4 @@ export class StripeService {
   }
 }
 
-// Export singleton instance
 export const stripeService = new StripeService();

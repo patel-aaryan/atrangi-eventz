@@ -5,7 +5,7 @@ import type { PastEventListItem, UpcomingEventItem } from "@/types/event";
 /**
  * Event Service - Contains business logic for events
  */
-export class EventService {
+class EventService {
   private readonly eventRepository: EventRepository;
   private readonly eventCache: EventCache;
 
@@ -69,5 +69,4 @@ export class EventService {
   }
 }
 
-// Export singleton instance
 export const eventService = new EventService();

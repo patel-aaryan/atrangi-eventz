@@ -13,7 +13,7 @@ import type {
 /**
  * Ticket Service - Contains business logic for ticket purchases
  */
-export class TicketService {
+class TicketService {
   private readonly orderRepository: OrderRepository;
   private readonly ticketRepository: TicketRepository;
   private readonly eventRepository: EventRepository;
@@ -173,6 +173,5 @@ export class TicketService {
   }
 }
 
-// Export singleton instance
 export const ticketService = new TicketService();
 

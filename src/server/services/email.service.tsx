@@ -18,7 +18,7 @@ export interface EmailOptions {
   attachments?: EmailAttachment[];
 }
 
-export class EmailService {
+class EmailService {
   private readonly domain: string;
   private readonly defaultFrom: string;
 
@@ -125,5 +125,4 @@ export class EmailService {
   }
 }
 
-// Export a singleton instance
 export const emailService = new EmailService();

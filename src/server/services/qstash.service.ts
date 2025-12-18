@@ -4,7 +4,7 @@ import { redis } from "@/server/config/redis";
 const QSTASH_MESSAGE_PREFIX = "qstash:payment:";
 const RESERVATION_TTL = 1200; // 20 minutes in seconds
 
-export class QStashService {
+class QStashService {
   /**
    * Schedule a PaymentIntent cleanup message
    * Message will be delivered after the reservation expires
@@ -60,6 +60,5 @@ export class QStashService {
   }
 }
 
-// Export singleton instance
 export const qstashService = new QStashService();
 

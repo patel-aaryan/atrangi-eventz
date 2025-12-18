@@ -33,7 +33,7 @@ interface BatchReserveTicketsResult {
 /**
  * Reservation Service - Contains business logic for ticket reservations
  */
-export class ReservationService {
+class ReservationService {
   private readonly reservationCache: ReservationCache;
   private readonly ticketRepository: TicketRepository;
   private readonly eventRepository: EventRepository;
@@ -227,5 +227,4 @@ export class ReservationService {
   }
 }
 
-// Export singleton instance
 export const reservationService = new ReservationService();

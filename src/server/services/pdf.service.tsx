@@ -3,7 +3,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import type { TicketPdfPayload, GeneratePdfResult } from "../types/pdf";
 import { TicketDocument } from "../pdfs/ticketDocument";
 
-export class PdfService {
+class PdfService {
   async generateTicketsPdf(
     payload: TicketPdfPayload
   ): Promise<GeneratePdfResult> {
@@ -27,5 +27,4 @@ export class PdfService {
   }
 }
 
-// Export singleton instance
 export const pdfService = new PdfService();
