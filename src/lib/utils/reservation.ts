@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ReservationService } from "@/server/services/reservation.service";
+import { reservationService } from "@/server/services/reservation.service";
 import { validateReservationRequest } from "@/lib/api/validation";
 
 /**
@@ -86,7 +86,6 @@ export async function handleBatchReservation(
   const validationError = validateBatchReservations(reservations);
   if (validationError) return validationError;
 
-  const reservationService = new ReservationService();
   const result = await reservationService.reserveTicketsBatch({
     eventId,
     reservations,
@@ -111,7 +110,6 @@ export async function handleSingleReservation(
 
   const { eventId, tierIndex, quantity } = body;
 
-  const reservationService = new ReservationService();
   const result = await reservationService.reserveTickets({
     eventId: eventId!,
     tierIndex: tierIndex!,

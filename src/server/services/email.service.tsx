@@ -1,7 +1,7 @@
 import { mg } from "../config/mailgun";
 import { render } from "@react-email/render";
 import TicketConfirmationEmail from "../emails/TicketConfirmationEmail";
-import { PdfService } from "./pdf.service";
+import { pdfService } from "./pdf.service";
 
 export interface EmailAttachment {
   filename: string;
@@ -21,13 +21,11 @@ export interface EmailOptions {
 export class EmailService {
   private readonly domain: string;
   private readonly defaultFrom: string;
-  private readonly pdfService: PdfService;
 
   constructor() {
     this.domain = process.env.MAILGUN_DOMAIN || "";
     this.defaultFrom =
       process.env.MAILGUN_FROM_EMAIL || `noreply@${this.domain}`;
-    this.pdfService = new PdfService();
 
     if (!this.domain) console.warn("MAILGUN_DOMAIN is not set in env");
   }
@@ -78,9 +76,9 @@ export class EmailService {
     orderTotal: number;
     buyerName: string;
   }): Promise<void> {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
-    const pdf = await this.pdfService.generateTicketsPdf({
+    const pdf = await pdfService.generateTicketsPdf({
       orderNumber: data.orderNumber,
       eventTitle: data.eventTitle,
       eventDate: data.eventDate,

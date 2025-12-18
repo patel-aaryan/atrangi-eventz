@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -8,16 +8,29 @@ import {
   PaymentForm,
   ProgressIndicator,
 } from "@/components/payment";
-import { PaymentFormData } from "@/types/checkout";
+import { StripeProvider } from "@/providers/stripe-provider";
+import type {
+  PaymentFormData,
+  StripePaymentResult,
+  TicketSelection,
+} from "@/types/checkout";
 import { CHECKOUT_STEPS, calculateProcessingFee } from "@/constants/checkout";
 import { useTicket } from "@/contexts/ticket-context";
-import type { TicketSelection } from "@/types/checkout";
 import { useAppSelector } from "@/store/hooks";
 import type { CompletePurchaseData } from "@/types/purchase";
+import { Loader2, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { createPaymentIntent } from "@/lib/api/stripe";
 
 export default function PaymentPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  // Use ref to prevent duplicate API calls (survives React Strict Mode double-invoke)
+  const paymentIntentCreatedRef = useRef(false);
+
   const {
     currentEvent,
     ticketSelections,
@@ -84,6 +97,52 @@ export default function PaymentPage() {
   const processingFee = calculateProcessingFee(subtotal - discount);
   const total = subtotal - discount + processingFee;
 
+  // Create PaymentIntent when component mounts (only once)
+  useEffect(() => {
+    const initializePaymentIntent = async () => {
+      if (!currentEvent || tickets.length === 0 || total <= 0) {
+        return;
+      }
+
+      // Prevent duplicate PaymentIntent creation using ref (survives Strict Mode)
+      if (paymentIntentCreatedRef.current) {
+        return;
+      }
+
+      // Mark as in-progress immediately to prevent race conditions
+      paymentIntentCreatedRef.current = true;
+
+      try {
+        setPaymentError(null);
+        const data = await createPaymentIntent({
+          amount: Math.round(total * 100), // Convert to cents
+          eventId: currentEvent.id,
+          eventTitle: currentEvent.title,
+          ticketSelections: ticketSelections.map((t) => ({
+            ticketId: t.ticketId,
+            ticketName: t.ticketName,
+            quantity: t.quantity,
+          })),
+        });
+
+        setClientSecret(data.clientSecret);
+      } catch (error) {
+        console.error("Error creating PaymentIntent:", error);
+        setPaymentError(
+          error instanceof Error
+            ? error.message
+            : "Failed to initialize payment. Please try again."
+        );
+        // Reset ref on error so user can retry
+        paymentIntentCreatedRef.current = false;
+      }
+    };
+
+    initializePaymentIntent();
+    // Only depend on event ID and total amount (not the entire objects)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentEvent?.id, total]);
+
   // Redirect if no event or tickets selected
   useEffect(() => {
     if (!currentEvent || tickets.length === 0) {
@@ -92,16 +151,62 @@ export default function PaymentPage() {
   }, [currentEvent, tickets.length, router]);
 
   // Show loading state while redirecting
-  if (!currentEvent || tickets.length === 0) {
-    return null;
-  }
+  if (!currentEvent || tickets.length === 0) return null;
 
-  const handleFormSubmit = async (formData: PaymentFormData) => {
+  // Render payment content based on state
+  const renderPaymentContent = () => {
+    if (paymentError) {
+      return (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-6 rounded-lg bg-destructive/10 border border-destructive/20 text-center"
+        >
+          <p className="text-destructive font-medium mb-4">{paymentError}</p>
+          <Button
+            onClick={() => window.location.reload()}
+            variant="outline"
+            size="lg"
+          >
+            <RotateCcw className="w-5 h-5 mr-2" />
+            Try Again
+          </Button>
+        </motion.div>
+      );
+    }
+
+    if (clientSecret) {
+      return (
+        <StripeProvider clientSecret={clientSecret}>
+          <PaymentForm
+            onSubmit={handleFormSubmit}
+            onBack={() => router.back()}
+            isSubmitting={isSubmitting}
+          />
+        </StripeProvider>
+      );
+    }
+
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex flex-col items-center justify-center p-12 rounded-lg border bg-card"
+      >
+        <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground">Initializing secure payment...</p>
+      </motion.div>
+    );
+  };
+
+  const handleFormSubmit = async (
+    formData: PaymentFormData,
+    stripeResult: StripePaymentResult
+  ) => {
     setIsSubmitting(true);
 
     try {
       if (!savedCheckoutData) {
-        // If we somehow reach payment without attendee/contact info, send user back
         alert(
           "We need your contact and attendee details before completing payment."
         );
@@ -109,39 +214,7 @@ export default function PaymentPage() {
         return;
       }
 
-      // TODO: Replace with actual API call to process payment
-      // Should combine payment data with attendee info from previous step
-      // Example API call:
-      // const attendeeInfo = JSON.parse(sessionStorage.getItem('attendeeInfo') || '{}');
-      // const response = await fetch('/api/checkout/process', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     eventId: eventId,
-      //     tickets: mockEventData.tickets,
-      //     promoCode: mockEventData.promoCode,
-      //     attendeeInfo: attendeeInfo,
-      //     paymentInfo: formData,
-      //     total: total,
-      //   }),
-      // });
-      // const result = await response.json();
-      // if (result.success) {
-      //   router.push(`/confirmation?orderId=${result.orderId}`);
-      // }
-
-      // Mock API delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      console.log("Form submitted:", formData);
-      console.log("Order details:", {
-        eventId: currentEvent.id,
-        eventTitle: currentEvent.title,
-        tickets,
-        total,
-      });
-
-      // Call purchase completion API before navigating to confirmation
+      // Call purchase completion API with Stripe payment details
       const payload: CompletePurchaseData = {
         eventId: currentEvent.id,
         ticketSelections: ticketSelections.map((selection) => {
@@ -175,13 +248,11 @@ export default function PaymentPage() {
           discount,
           processingFee,
           total,
-          // Stripe IDs will be filled in once Stripe integration is wired up
-          paymentStatus: "succeeded",
+          stripePaymentIntentId: stripeResult.paymentIntentId,
+          stripePaymentMethodId: stripeResult.paymentMethodId,
+          paymentStatus: stripeResult.status,
         },
-        billingInfo: {
-          zip: formData.billingZip,
-        },
-        // Promo code support can be added here when implemented
+        billingInfo: undefined,
         promoCode: undefined,
       };
 
@@ -210,13 +281,11 @@ export default function PaymentPage() {
       };
 
       // Navigate to confirmation page
-
       router.push(
         `/confirmation?orderId=${result.orderNumber || result.orderId}`
       );
     } catch (error) {
       console.error("Payment error:", error);
-      // TODO: Show error message to user
       alert("Payment failed. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -253,13 +322,7 @@ export default function PaymentPage() {
         {/* Two Column Layout */}
         <div className="grid lg:grid-cols-3 gap-8 items-start">
           {/* Left Column - Payment Form (2/3 width) */}
-          <div className="lg:col-span-2">
-            <PaymentForm
-              onSubmit={handleFormSubmit}
-              onBack={() => router.back()}
-              isSubmitting={isSubmitting}
-            />
-          </div>
+          <div className="lg:col-span-2">{renderPaymentContent()}</div>
 
           {/* Right Column - Order Summary (1/3 width) */}
           <div className="lg:col-span-1">

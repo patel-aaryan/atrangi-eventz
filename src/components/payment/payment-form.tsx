@@ -2,22 +2,24 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import {
+  PaymentElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { CreditCard, Lock, ShieldCheck, ChevronLeft } from "lucide-react";
-import type { PaymentFormData } from "@/types/checkout";
-import {
-  CARD_NUMBER_MAX_LENGTH,
-  CARD_EXPIRY_MAX_LENGTH,
-  CARD_CVC_MAX_LENGTH,
-} from "@/constants/checkout";
+import type { PaymentFormData, StripePaymentResult } from "@/types/checkout";
 
 interface PaymentFormProps {
-  onSubmit: (formData: PaymentFormData) => void;
+  onSubmit: (
+    formData: PaymentFormData,
+    stripeResult: StripePaymentResult
+  ) => void;
   onBack: () => void;
   isSubmitting?: boolean;
 }
@@ -27,19 +29,18 @@ export function PaymentForm({
   onBack,
   isSubmitting = false,
 }: Readonly<PaymentFormProps>) {
+  const stripe = useStripe();
+  const elements = useElements();
+
   const [formData, setFormData] = useState<PaymentFormData>({
-    cardNumber: "",
-    cardExpiry: "",
-    cardCvc: "",
-    cardName: "",
-    billingZip: "",
     agreeToTerms: false,
     subscribeToNewsletter: false,
   });
 
   const [errors, setErrors] = useState<
-    Partial<Record<keyof PaymentFormData, string>>
+    Partial<Record<keyof PaymentFormData | "stripe", string>>
   >({});
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleInputChange = (
     field: keyof PaymentFormData,
@@ -52,39 +53,93 @@ export function PaymentForm({
     }
   };
 
-  // TEMPORARILY DISABLED: Form validation removed
   const validateForm = (): boolean => {
-    // Validation temporarily disabled
-    setErrors({});
-    return true;
+    const newErrors: Partial<Record<keyof PaymentFormData | "stripe", string>> =
+      {};
+
+    if (!formData.agreeToTerms) {
+      newErrors.agreeToTerms = "You must agree to the terms and conditions";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      onSubmit(formData);
+
+    if (!validateForm()) return;
+
+    if (!stripe || !elements) {
+      setErrors((prev) => ({
+        ...prev,
+        stripe: "Payment system is not ready. Please try again.",
+      }));
+      return;
+    }
+
+    setIsProcessing(true);
+    setErrors({});
+
+    try {
+      // Confirm the payment with Stripe
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          // Return URL is required but we'll handle success in the redirect
+          return_url: `${window.location.origin}/confirmation`,
+        },
+        redirect: "if_required",
+      });
+
+      if (error) {
+        // Show error to customer
+        setErrors((prev) => ({
+          ...prev,
+          stripe:
+            error.message || "An error occurred while processing your payment.",
+        }));
+        setIsProcessing(false);
+        return;
+      }
+
+      // Payment succeeded without redirect (most card payments)
+      if (paymentIntent?.status === "succeeded") {
+        const stripeResult: StripePaymentResult = {
+          paymentIntentId: paymentIntent.id,
+          paymentMethodId:
+            typeof paymentIntent.payment_method === "string"
+              ? paymentIntent.payment_method
+              : paymentIntent.payment_method?.id,
+          status: paymentIntent.status,
+        };
+
+        onSubmit(formData, stripeResult);
+      } else if (paymentIntent?.status === "requires_action") {
+        // 3D Secure or other action required - Stripe will handle the redirect
+        setErrors((prev) => ({
+          ...prev,
+          stripe:
+            "Additional authentication required. Please complete the verification.",
+        }));
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          stripe: "Payment was not completed. Please try again.",
+        }));
+      }
+    } catch (err) {
+      console.error("Payment error:", err);
+      setErrors((prev) => ({
+        ...prev,
+        stripe: "An unexpected error occurred. Please try again.",
+      }));
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  // Format card number with spaces
-  const handleCardNumberChange = (value: string) => {
-    const cleaned = value.replaceAll(/\s/g, "");
-    const formatted = cleaned.match(/.{1,4}/g)?.join(" ") || cleaned;
-    handleInputChange("cardNumber", formatted.slice(0, CARD_NUMBER_MAX_LENGTH));
-  };
-
-  // Format expiry date
-  const handleExpiryChange = (value: string) => {
-    const cleaned = value.replaceAll(/\D/g, "");
-    if (cleaned.length >= 2) {
-      handleInputChange(
-        "cardExpiry",
-        `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}`
-      );
-    } else {
-      handleInputChange("cardExpiry", cleaned);
-    }
-  };
+  const isLoading = isSubmitting || isProcessing || !stripe || !elements;
 
   return (
     <motion.form
@@ -106,103 +161,17 @@ export function PaymentForm({
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Stripe Payment Element */}
           <div className="space-y-2">
-            <Label htmlFor="cardNumber">
-              Card Number <span className="text-destructive">*</span>
-            </Label>
-            <div className="relative">
-              <Input
-                id="cardNumber"
-                value={formData.cardNumber}
-                onChange={(e) => handleCardNumberChange(e.target.value)}
-                placeholder="1234 5678 9012 3456"
-                maxLength={CARD_NUMBER_MAX_LENGTH}
-                className={errors.cardNumber ? "border-destructive" : ""}
-              />
-              <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <PaymentElement options={{ layout: "tabs" }} />
+          </div>
+
+          {/* Stripe Error Message */}
+          {errors.stripe && (
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+              <p className="text-sm text-destructive">{errors.stripe}</p>
             </div>
-            {errors.cardNumber && (
-              <p className="text-sm text-destructive">{errors.cardNumber}</p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="cardExpiry">
-                Expiry Date <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="cardExpiry"
-                value={formData.cardExpiry}
-                onChange={(e) => handleExpiryChange(e.target.value)}
-                placeholder="MM/YY"
-                maxLength={CARD_EXPIRY_MAX_LENGTH}
-                className={errors.cardExpiry ? "border-destructive" : ""}
-              />
-              {errors.cardExpiry && (
-                <p className="text-sm text-destructive">{errors.cardExpiry}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="cardCvc">
-                CVC <span className="text-destructive">*</span>
-              </Label>
-              <div className="relative">
-                <Input
-                  id="cardCvc"
-                  value={formData.cardCvc}
-                  onChange={(e) =>
-                    handleInputChange(
-                      "cardCvc",
-                      e.target.value
-                        .replace(/\D/g, "")
-                        .slice(0, CARD_CVC_MAX_LENGTH)
-                    )
-                  }
-                  placeholder="123"
-                  maxLength={CARD_CVC_MAX_LENGTH}
-                  className={errors.cardCvc ? "border-destructive" : ""}
-                />
-                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              </div>
-              {errors.cardCvc && (
-                <p className="text-sm text-destructive">{errors.cardCvc}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="cardName">
-              Cardholder Name <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="cardName"
-              value={formData.cardName}
-              onChange={(e) => handleInputChange("cardName", e.target.value)}
-              placeholder="John Doe"
-              className={errors.cardName ? "border-destructive" : ""}
-            />
-            {errors.cardName && (
-              <p className="text-sm text-destructive">{errors.cardName}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="billingZip">
-              Billing ZIP Code <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="billingZip"
-              value={formData.billingZip}
-              onChange={(e) => handleInputChange("billingZip", e.target.value)}
-              placeholder="12345"
-              className={errors.billingZip ? "border-destructive" : ""}
-            />
-            {errors.billingZip && (
-              <p className="text-sm text-destructive">{errors.billingZip}</p>
-            )}
-          </div>
+          )}
 
           <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
             <ShieldCheck className="w-4 h-4 text-green-600" />
@@ -274,6 +243,7 @@ export function PaymentForm({
               size="lg"
               onClick={onBack}
               className="flex-1"
+              disabled={isLoading}
             >
               <ChevronLeft className="w-5 h-5 mr-2" />
               Back to Attendee Info
@@ -282,10 +252,10 @@ export function PaymentForm({
             <Button
               type="submit"
               size="lg"
-              disabled={isSubmitting}
+              disabled={isLoading}
               className="flex-1 bg-gradient-to-r from-primary to-pink-500 hover:opacity-90"
             >
-              {isSubmitting ? (
+              {isLoading ? (
                 <span className="flex items-center gap-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Processing...

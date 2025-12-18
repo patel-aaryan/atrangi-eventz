@@ -24,10 +24,5 @@ export const TRUST_SIGNALS = [
   { text: "All sales are final", color: "green" },
 ] as const;
 
-// Card Formatting
-export const CARD_NUMBER_MAX_LENGTH = 19; // 16 digits + 3 spaces
-export const CARD_EXPIRY_MAX_LENGTH = 5; // MM/YY
-export const CARD_CVC_MAX_LENGTH = 4; // 3 or 4 digits
-
 // Ticket Limits
 export const LOW_STOCK_THRESHOLD = 20; // Show "X left" when below this number

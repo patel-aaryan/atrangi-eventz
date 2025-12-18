@@ -26,3 +26,6 @@ export class PdfService {
     };
   }
 }
+
+// Export singleton instance
+export const pdfService = new PdfService();

@@ -65,17 +65,18 @@ export interface AttendeeFormData {
 }
 
 // Payment Form Data (for checkout page - payment only)
+// Note: Card details are now collected via Stripe Elements, not stored locally
 export interface PaymentFormData {
-  // Payment Information
-  cardNumber: string;
-  cardExpiry: string;
-  cardCvc: string;
-  cardName: string;
-  billingZip: string;
-
   // Terms
   agreeToTerms: boolean;
   subscribeToNewsletter: boolean;
+}
+
+// Stripe payment result data returned after successful payment
+export interface StripePaymentResult {
+  paymentIntentId: string;
+  paymentMethodId?: string;
+  status: string;
 }
 
 // Progress/Step Types

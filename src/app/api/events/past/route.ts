@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { EventService } from "@/server/services/event.service";
+import { eventService } from "@/server/services/event.service";
 
 /**
  * GET /api/events/past
@@ -7,7 +7,6 @@ import { EventService } from "@/server/services/event.service";
  */
 export async function GET() {
   try {
-    const eventService = new EventService();
     const events = await eventService.getPastEvents();
 
     return NextResponse.json({

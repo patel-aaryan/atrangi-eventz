@@ -226,3 +226,6 @@ export class ReservationService {
     }
   }
 }
+
+// Export singleton instance
+export const reservationService = new ReservationService();

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { TicketService } from "@/server/services/ticket.service";
-import { ReservationService } from "@/server/services/reservation.service";
+import { ticketService } from "@/server/services/ticket.service";
+import { reservationService } from "@/server/services/reservation.service";
+import { qstashService } from "@/server/services/qstash.service";
 import { getOrCreateSessionId } from "@/lib/api/session";
 
 /**
@@ -55,7 +56,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Complete the purchase
-    const ticketService = new TicketService();
     const result = await ticketService.completePurchase({
       eventId,
       ticketSelections,
@@ -66,11 +66,20 @@ export async function POST(request: NextRequest) {
       promoCode,
     });
 
+    // Cancel the scheduled QStash cleanup message
+    try {
+      if (paymentInfo.stripePaymentIntentId) {
+        await qstashService.cancelPaymentCleanup(paymentInfo.stripePaymentIntentId);
+      }
+    } catch (qstashError) {
+      // Log but don't fail the purchase
+      console.error("Failed to cancel QStash cleanup message:", qstashError);
+    }
+
     // After a successful purchase, clear any reservations for this session/event
     // so the user's reserved tickets are removed from the cache.
     try {
       const sessionId = await getOrCreateSessionId();
-      const reservationService = new ReservationService();
       await reservationService.clearReservationsForSession(eventId, sessionId);
     } catch (cleanupError) {
       // Log cleanup errors but don't fail the purchase response because of them

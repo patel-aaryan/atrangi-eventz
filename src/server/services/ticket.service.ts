@@ -1,7 +1,7 @@
 import { OrderRepository } from "@/server/repository/postgres/order.repository";
 import { TicketRepository } from "@/server/repository/postgres/ticket.repository";
 import { EventRepository } from "@/server/repository/postgres/event.repository";
-import { EmailService } from "./email.service";
+import { emailService } from "./email.service";
 import QRCode from "qrcode";
 import type { CreateOrderData } from "@/types/order";
 import type { CreateTicketData } from "@/types/ticket";
@@ -17,13 +17,11 @@ export class TicketService {
   private readonly orderRepository: OrderRepository;
   private readonly ticketRepository: TicketRepository;
   private readonly eventRepository: EventRepository;
-  private readonly emailService: EmailService;
 
   constructor() {
     this.orderRepository = new OrderRepository();
     this.ticketRepository = new TicketRepository();
     this.eventRepository = new EventRepository();
-    this.emailService = new EmailService();
   }
 
   /**
@@ -144,7 +142,7 @@ export class TicketService {
         : event.venue_name || event.venue_city || "TBA";
 
     // 7. Send confirmation email
-    await this.emailService.sendTicketConfirmationEmail({
+    await emailService.sendTicketConfirmationEmail({
       to: data.contactInfo.email,
       orderNumber: order.order_number,
       eventTitle: event.title,
@@ -174,4 +172,7 @@ export class TicketService {
     };
   }
 }
+
+// Export singleton instance
+export const ticketService = new TicketService();
 

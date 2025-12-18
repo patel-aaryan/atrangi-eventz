@@ -68,3 +68,6 @@ export class EventService {
     return event;
   }
 }
+
+// Export singleton instance
+export const eventService = new EventService();

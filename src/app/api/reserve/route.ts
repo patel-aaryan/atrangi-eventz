@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ReservationService } from "@/server/services/reservation.service";
+import { reservationService } from "@/server/services/reservation.service";
 import { handleReservationError } from "@/lib/api/validation";
 import { getOrCreateSessionId } from "@/lib/api/session";
 import {
@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
     const sessionId = await getOrCreateSessionId();
 
     // Get reservations for this session
-    const reservationService = new ReservationService();
     const reservations = await reservationService.getReservationsBySession(
       eventId,
       sessionId
