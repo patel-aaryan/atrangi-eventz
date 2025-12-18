@@ -6,14 +6,13 @@ on:
       confirm:
         description: 'Type "migrate" to confirm running migrations'
         required: true
-        default: ""
   push:
     branches:
       - main
     paths:
-      - "migrations/**"
-      - "database.json"
-      - "scripts/migrate.js"
+      - migrations/**
+      - database.json
+      - scripts/migrate.js
 
 jobs:
   migrate:
@@ -30,8 +29,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: 20
+          cache: npm
 
       - name: Install dependencies
         run: npm install
