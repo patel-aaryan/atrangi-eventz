@@ -22,7 +22,7 @@ export function ReservationExpired() {
               Reservation Expired
             </h2>
             <p className="text-muted-foreground mb-6">
-              Your ticket reservation has expired. Please try again.
+              Your ticket reservation has expired. Please try again later.
             </p>
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="w-4 h-4 animate-spin" />
