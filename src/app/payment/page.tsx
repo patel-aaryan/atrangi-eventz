@@ -17,10 +17,14 @@ import type {
 import { CHECKOUT_STEPS, calculateProcessingFee } from "@/constants/checkout";
 import { useTicket } from "@/contexts/ticket-context";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import type { CompletePurchaseData } from "@/types/purchase";
+import type {
+  CompletePurchaseData,
+  CompletePurchaseResult,
+} from "@/types/purchase";
 import { Loader2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createPaymentIntent } from "@/lib/api/stripe";
+import { completePurchase } from "@/lib/api/purchase";
 import { useReservationTimer } from "@/hooks/use-reservation-timer";
 import {
   setPaymentIntent,
@@ -321,35 +325,29 @@ export default function PaymentPage() {
           total,
           stripePaymentIntentId: stripeResult.paymentIntentId,
           stripePaymentMethodId: stripeResult.paymentMethodId,
+          stripeChargeId: stripeResult.chargeId,
           paymentStatus: stripeResult.status,
         },
-        billingInfo: undefined,
+        billingInfo: {
+          zip: formData.billingPostalCode,
+          address: formData.billingAddress,
+        },
         promoCode: undefined,
       };
 
-      const response = await fetch("/api/purchase/complete", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
         const errorBody = await response.json().catch(() => ({}));
-        console.error("Purchase completion failed:", errorBody);
+      let result: CompletePurchaseResult;
+      try {
+        result = await completePurchase(payload);
+      } catch (error) {
+        console.error("Purchase completion failed:", error);
         alert(
-          errorBody?.message ||
-            "We couldn't complete your purchase. Please try again."
+          error instanceof Error
+            ? error.message
+            : "We couldn't complete your purchase. Please try again."
         );
         return;
       }
-
-      const result = (await response.json()) as {
-        success?: boolean;
-        orderId: string;
-        orderNumber: string;
-      };
 
       // Clean up stored payment and reservation data after successful purchase
       dispatch(clearPaymentIntent());

@@ -67,6 +67,10 @@ export interface AttendeeFormData {
 // Payment Form Data (for checkout page - payment only)
 // Note: Card details are now collected via Stripe Elements, not stored locally
 export interface PaymentFormData {
+  // Billing Information
+  billingPostalCode: string;
+  billingAddress: string;
+
   // Terms
   agreeToTerms: boolean;
   subscribeToNewsletter: boolean;
@@ -76,6 +80,7 @@ export interface PaymentFormData {
 export interface StripePaymentResult {
   paymentIntentId: string;
   paymentMethodId?: string;
+  chargeId?: string;
   status: string;
 }
 

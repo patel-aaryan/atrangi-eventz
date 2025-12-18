@@ -53,7 +53,6 @@ CREATE TABLE IF NOT EXISTS tickets (
     stripe_payment_intent_id VARCHAR(255), -- Stripe PaymentIntent ID
     stripe_charge_id VARCHAR(255), -- Stripe Charge ID
     stripe_payment_method_id VARCHAR(255), -- Stripe PaymentMethod ID
-    stripe_customer_id VARCHAR(255), -- Stripe Customer ID (if customer created)
     payment_status VARCHAR(50), -- Stripe payment status (succeeded, pending, failed, etc.)
     
     -- Status and tracking

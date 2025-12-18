@@ -3,6 +3,7 @@ import { ticketService } from "@/server/services/ticket.service";
 import { reservationService } from "@/server/services/reservation.service";
 import { qstashService } from "@/server/services/qstash.service";
 import { getOrCreateSessionId } from "@/lib/api/session";
+import { normalizePaymentInfo } from "@/server/utils/payment";
 
 /**
  * POST /api/purchase/complete
@@ -55,13 +56,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Normalize Stripe fields server-side (source of truth) so we always persist a charge id.
+    // Stripe.js may not include all fields in the client PaymentIntent shape.
+    const normalizedPaymentInfo = await normalizePaymentInfo(
+      paymentInfo as Record<string, unknown>
+    );
+
     // Complete the purchase
     const result = await ticketService.completePurchase({
       eventId,
       ticketSelections,
       attendeeInfo,
       contactInfo,
-      paymentInfo,
+      paymentInfo: normalizedPaymentInfo as typeof paymentInfo,
       billingInfo,
       promoCode,
     });

@@ -9,10 +9,17 @@ import {
 } from "@stripe/react-stripe-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CreditCard, Lock, ShieldCheck, ChevronLeft } from "lucide-react";
+import {
+  CreditCard,
+  Lock,
+  ShieldCheck,
+  ChevronLeft,
+  MapPin,
+} from "lucide-react";
 import type { PaymentFormData, StripePaymentResult } from "@/types/checkout";
 
 interface PaymentFormProps {
@@ -33,6 +40,8 @@ export function PaymentForm({
   const elements = useElements();
 
   const [formData, setFormData] = useState<PaymentFormData>({
+    billingPostalCode: "",
+    billingAddress: "",
     agreeToTerms: false,
     subscribeToNewsletter: false,
   });
@@ -56,6 +65,14 @@ export function PaymentForm({
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof PaymentFormData | "stripe", string>> =
       {};
+
+    if (!formData.billingPostalCode.trim()) {
+      newErrors.billingPostalCode = "Postal code is required";
+    }
+
+    if (!formData.billingAddress.trim()) {
+      newErrors.billingAddress = "Billing address is required";
+    }
 
     if (!formData.agreeToTerms) {
       newErrors.agreeToTerms = "You must agree to the terms and conditions";
@@ -105,12 +122,30 @@ export function PaymentForm({
 
       // Payment succeeded without redirect (most card payments)
       if (paymentIntent?.status === "succeeded") {
+        // `latest_charge` is not always present on the Stripe.js PaymentIntent type.
+        // We defensively extract it if it exists, and the server will also backfill
+        // charge ID from the PaymentIntent as a reliable source of truth.
+        const latestCharge = (
+          paymentIntent as unknown as { latest_charge?: unknown }
+        ).latest_charge;
+        let chargeId: string | undefined;
+        if (typeof latestCharge === "string") {
+          chargeId = latestCharge;
+        } else if (
+          latestCharge &&
+          typeof latestCharge === "object" &&
+          "id" in latestCharge
+        ) {
+          chargeId = (latestCharge as { id: string }).id;
+        }
+
         const stripeResult: StripePaymentResult = {
           paymentIntentId: paymentIntent.id,
           paymentMethodId:
             typeof paymentIntent.payment_method === "string"
               ? paymentIntent.payment_method
               : paymentIntent.payment_method?.id,
+          chargeId,
           status: paymentIntent.status,
         };
 
@@ -164,6 +199,64 @@ export function PaymentForm({
           {/* Stripe Payment Element */}
           <div className="space-y-2">
             <PaymentElement options={{ layout: "tabs" }} />
+          </div>
+
+          {/* Billing Information */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <MapPin className="w-4 h-4" />
+              <span>Billing Information</span>
+            </div>
+
+            <div className="space-y-4">
+              {/* Billing Address */}
+              <div className="space-y-2">
+                <Label htmlFor="billingAddress">
+                  Billing Address <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="billingAddress"
+                  type="text"
+                  placeholder="123 Main Street, City, Province"
+                  value={formData.billingAddress}
+                  onChange={(e) =>
+                    handleInputChange("billingAddress", e.target.value)
+                  }
+                  className={errors.billingAddress ? "border-destructive" : ""}
+                  disabled={isLoading}
+                />
+                {errors.billingAddress && (
+                  <p className="text-sm text-destructive">
+                    {errors.billingAddress}
+                  </p>
+                )}
+              </div>
+
+              {/* Postal Code */}
+              <div className="space-y-2">
+                <Label htmlFor="billingPostalCode">
+                  Postal Code <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="billingPostalCode"
+                  type="text"
+                  placeholder="A1A 1A1"
+                  value={formData.billingPostalCode}
+                  onChange={(e) =>
+                    handleInputChange("billingPostalCode", e.target.value)
+                  }
+                  className={
+                    errors.billingPostalCode ? "border-destructive" : ""
+                  }
+                  disabled={isLoading}
+                />
+                {errors.billingPostalCode && (
+                  <p className="text-sm text-destructive">
+                    {errors.billingPostalCode}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Stripe Error Message */}

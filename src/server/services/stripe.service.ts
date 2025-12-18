@@ -80,6 +80,37 @@ class StripeService {
   }
 
   /**
+   * Derive commonly-needed IDs from a PaymentIntent for persistence.
+   * This keeps API routes thin and provides a consistent source of truth.
+   */
+  async getPaymentIntentPersistenceFields(paymentIntentId: string): Promise<{
+    stripeChargeId?: string;
+    stripePaymentMethodId?: string;
+    stripeCustomerId?: string;
+    paymentStatus?: string;
+  }> {
+    const pi = await this.getPaymentIntent(paymentIntentId);
+
+    const latestCharge = pi.latest_charge;
+    const stripeChargeId =
+      typeof latestCharge === "string" ? latestCharge : latestCharge?.id;
+
+    const paymentMethod = pi.payment_method;
+    const stripePaymentMethodId =
+      typeof paymentMethod === "string" ? paymentMethod : paymentMethod?.id;
+
+    const customer = pi.customer;
+    const stripeCustomerId = typeof customer === "string" ? customer : customer?.id;
+
+    return {
+      stripeChargeId,
+      stripePaymentMethodId,
+      stripeCustomerId,
+      paymentStatus: pi.status,
+    };
+  }
+
+  /**
    * Cancel a PaymentIntent
    * @param paymentIntentId Stripe Payment Intent ID
    */
