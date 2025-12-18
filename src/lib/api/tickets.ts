@@ -10,6 +10,7 @@ interface ReserveTicketsRequest {
 
 interface ReserveTicketsResponse {
   reservationId: string;
+  createdAt: number;
 }
 
 interface BatchReserveTicketsRequest {
@@ -19,6 +20,12 @@ interface BatchReserveTicketsRequest {
 
 interface BatchReserveTicketsResponse {
   reservationIds: string[];
+  createdAt: number;
+}
+
+export interface ReservationResult {
+  reservationIds: string[];
+  createdAt: number;
 }
 
 interface ApiErrorResponse {
@@ -90,11 +97,11 @@ export async function getReservations(
  * Reserve multiple tickets for an event in a single atomic operation
  * This prevents race conditions when reserving multiple tickets at once
  * @param params - Batch reservation parameters (eventId, reservations array)
- * @returns Array of reservation IDs
+ * @returns Reservation IDs and createdAt timestamp
  */
 export async function reserveTicketsBatch(
   params: BatchReserveTicketsRequest
-): Promise<string[]> {
+): Promise<ReservationResult> {
   const response = await fetch("/api/reserve", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -111,5 +118,5 @@ export async function reserveTicketsBatch(
   }
 
   const data: BatchReserveTicketsResponse = await response.json();
-  return data.reservationIds;
+  return { reservationIds: data.reservationIds, createdAt: data.createdAt };
 }

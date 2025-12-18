@@ -23,6 +23,9 @@ interface TicketSelection {
 }
 
 interface TicketContextType {
+  // Loading state
+  isLoading: boolean;
+
   // Drawer state
   isOpen: boolean;
   openDrawer: (event: UpcomingEventItem) => void;
@@ -65,7 +68,7 @@ export function TicketProvider({ children }: TicketProviderProps) {
   >({});
 
   // Fetch and sync reservations from cache
-  useTicketReservations({
+  const { isLoading } = useTicketReservations({
     currentEvent,
     setCurrentEvent,
     setSelectedTickets,
@@ -113,6 +116,9 @@ export function TicketProvider({ children }: TicketProviderProps) {
 
   const value = useMemo(
     () => ({
+      // Loading state
+      isLoading,
+
       // Drawer state
       isOpen,
       openDrawer,
@@ -138,6 +144,7 @@ export function TicketProvider({ children }: TicketProviderProps) {
       ticketSelections,
     }),
     [
+      isLoading,
       isOpen,
       openDrawer,
       closeDrawer,

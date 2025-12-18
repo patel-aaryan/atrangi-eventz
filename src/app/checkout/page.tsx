@@ -13,6 +13,7 @@ import {
   ContactForm,
   AttendeeCard,
   EmptyCartState,
+  CheckoutLoadingSkeleton,
 } from "@/components/checkout";
 import { CHECKOUT_STEPS } from "@/constants/checkout";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -22,13 +23,39 @@ import {
   type CheckoutFormInput,
 } from "@/lib/validation/checkout";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setCheckoutData } from "@/store/slices/checkoutSlice";
+import {
+  setCheckoutData,
+  clearReservation,
+} from "@/store/slices/checkoutSlice";
+import { useReservationTimer } from "@/hooks/use-reservation-timer";
+import { ReservationTimer } from "@/components/reservation-timer";
+import { ReservationExpired } from "@/components/reservation-expired";
+
+const RESERVATION_DURATION = 20 * 60 * 1000; // 20 minutes in milliseconds
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { ticketSelections } = useTicket();
+  const { ticketSelections, isLoading } = useTicket();
   const dispatch = useAppDispatch();
   const savedCheckoutData = useAppSelector((state) => state.checkout.formData);
+  const storedReservation = useAppSelector(
+    (state) => state.checkout.reservation
+  );
+
+  // Reservation timer hook with persisted start time from when reservation was created
+  const { minutes, seconds, isExpired, isWarning } = useReservationTimer({
+    duration: RESERVATION_DURATION,
+    startTime: storedReservation?.createdAt || null,
+    onExpire: () => {
+      // Clean up reservation data
+      dispatch(clearReservation());
+      // Redirect handled by ReservationExpired component or after delay
+      setTimeout(() => {
+        router.push("/events");
+      }, 3000);
+    },
+    enabled: !!storedReservation?.createdAt,
+  });
 
   const form = useForm<CheckoutFormInput>({
     resolver: zodResolver(checkoutFormSchema),
@@ -113,7 +140,13 @@ export default function CheckoutPage() {
   const hasNoTickets =
     !ticketSelections || ticketSelections.length === 0 || fields.length === 0;
 
-  // Empty state UI
+  // Show expiration message if reservation expired
+  if (isExpired) return <ReservationExpired />;
+
+  // Loading skeleton while fetching reservations
+  if (isLoading) return <CheckoutLoadingSkeleton />;
+
+  // Empty state UI - only show when we're sure there are no tickets
   if (hasNoTickets) return <EmptyCartState onBrowseEvents={handleBack} />;
 
   return (
@@ -131,7 +164,7 @@ export default function CheckoutPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-8"
+          className="text-center mb-6"
         >
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3">
             <span className="bg-gradient-to-r from-primary via-pink-500 to-purple-500 bg-clip-text text-transparent">
@@ -143,6 +176,15 @@ export default function CheckoutPage() {
             people
           </p>
         </motion.div>
+
+        {/* Countdown Timer */}
+        {storedReservation?.createdAt && !isExpired && (
+          <ReservationTimer
+            minutes={minutes}
+            seconds={seconds}
+            isWarning={isWarning}
+          />
+        )}
 
         {/* Two Column Layout */}
         <div className="grid lg:grid-cols-2 gap-6 mb-6">

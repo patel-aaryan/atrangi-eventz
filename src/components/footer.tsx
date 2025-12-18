@@ -8,8 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { FaInstagram, FaYoutube, FaTiktok } from "react-icons/fa";
 import { Mail, Send, MapPin } from "lucide-react";
 import { siteConfig } from "@/lib/metadata";
+import { usePathname } from "next/navigation";
 
 export function Footer() {
+  const pathname = usePathname();
+  const routesToHideFooter = ["/checkout", "/payment"];
+  const hideFooter = routesToHideFooter.includes(pathname);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -69,6 +74,8 @@ export function Footer() {
       color: "hover:text-foreground",
     },
   ];
+
+  if (hideFooter) return null;
 
   return (
     <footer className="bg-card/50 border-t border-border">

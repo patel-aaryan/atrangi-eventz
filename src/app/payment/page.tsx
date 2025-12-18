@@ -16,14 +16,25 @@ import type {
 } from "@/types/checkout";
 import { CHECKOUT_STEPS, calculateProcessingFee } from "@/constants/checkout";
 import { useTicket } from "@/contexts/ticket-context";
-import { useAppSelector } from "@/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import type { CompletePurchaseData } from "@/types/purchase";
 import { Loader2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createPaymentIntent } from "@/lib/api/stripe";
+import { useReservationTimer } from "@/hooks/use-reservation-timer";
+import {
+  setPaymentIntent,
+  clearPaymentIntent,
+  clearReservation,
+} from "@/store/slices/checkoutSlice";
+import { ReservationExpired } from "@/components/reservation-expired";
+import { ReservationTimer } from "@/components/reservation-timer";
+
+const RESERVATION_DURATION = 20 * 60 * 1000; // 20 minutes in milliseconds
 
 export default function PaymentPage() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -35,8 +46,31 @@ export default function PaymentPage() {
     currentEvent,
     ticketSelections,
     subtotal: contextSubtotal,
+    isLoading,
   } = useTicket();
   const savedCheckoutData = useAppSelector((state) => state.checkout.formData);
+  const storedPayment = useAppSelector((state) => state.checkout.paymentIntent);
+  const storedReservation = useAppSelector(
+    (state) => state.checkout.reservation
+  );
+
+  // Reservation timer hook with persisted start time from when reservation was created
+  const { minutes, seconds, isExpired, isWarning } = useReservationTimer({
+    duration: RESERVATION_DURATION,
+    startTime: storedReservation?.createdAt || null,
+    onExpire: () => {
+      setPaymentError(
+        "Your reservation has expired. Please select tickets again."
+      );
+      // Clean up stored payment and reservation data
+      dispatch(clearPaymentIntent());
+      dispatch(clearReservation());
+      setTimeout(() => {
+        router.push("/events");
+      }, 3000);
+    },
+    enabled: !!storedReservation?.createdAt,
+  });
 
   // Transform ticket selections to match OrderSummary format
   const tickets: TicketSelection[] = useMemo(() => {
@@ -109,13 +143,36 @@ export default function PaymentPage() {
         return;
       }
 
+      const amountInCents = Math.round(total * 100);
+
+      // Check Redux for existing PaymentIntent
+      if (
+        storedPayment &&
+        storedPayment.eventId === currentEvent.id &&
+        storedPayment.amount === amountInCents &&
+        Date.now() - storedPayment.createdAt < RESERVATION_DURATION
+      ) {
+        // Reuse existing PaymentIntent
+        console.log("[Payment] Reusing existing PaymentIntent from Redux");
+        setClientSecret(storedPayment.clientSecret);
+        paymentIntentCreatedRef.current = true;
+        return;
+      }
+
+      // Clean up invalid/expired stored data
+      if (storedPayment) {
+        dispatch(clearPaymentIntent());
+      }
+
       // Mark as in-progress immediately to prevent race conditions
       paymentIntentCreatedRef.current = true;
 
       try {
         setPaymentError(null);
+        console.log("[Payment] Creating new PaymentIntent");
+
         const data = await createPaymentIntent({
-          amount: Math.round(total * 100), // Convert to cents
+          amount: amountInCents,
           eventId: currentEvent.id,
           eventTitle: currentEvent.title,
           ticketSelections: ticketSelections.map((t) => ({
@@ -126,6 +183,17 @@ export default function PaymentPage() {
         });
 
         setClientSecret(data.clientSecret);
+
+        // Store PaymentIntent in Redux (auto-persists to sessionStorage)
+        dispatch(
+          setPaymentIntent({
+            clientSecret: data.clientSecret,
+            paymentIntentId: data.paymentIntentId,
+            createdAt: Date.now(),
+            amount: amountInCents,
+            eventId: currentEvent.id,
+          })
+        );
       } catch (error) {
         console.error("Error creating PaymentIntent:", error);
         setPaymentError(
@@ -141,17 +209,20 @@ export default function PaymentPage() {
     initializePaymentIntent();
     // Only depend on event ID and total amount (not the entire objects)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentEvent?.id, total]);
+  }, [currentEvent?.id, total, storedPayment, dispatch]);
 
-  // Redirect if no event or tickets selected
+  // Redirect if no event or tickets selected (only after loading completes)
   useEffect(() => {
-    if (!currentEvent || tickets.length === 0) {
+    if (!isLoading && (!currentEvent || tickets.length === 0)) {
       router.push("/events");
     }
-  }, [currentEvent, tickets.length, router]);
+  }, [isLoading, currentEvent, tickets.length, router]);
 
-  // Show loading state while redirecting
-  if (!currentEvent || tickets.length === 0) return null;
+  // Show loading state while data is being fetched
+  if (isLoading || !currentEvent || tickets.length === 0) return null;
+
+  // Show expiration message if reservation expired
+  if (isExpired) return <ReservationExpired />;
 
   // Render payment content based on state
   const renderPaymentContent = () => {
@@ -280,6 +351,10 @@ export default function PaymentPage() {
         orderNumber: string;
       };
 
+      // Clean up stored payment and reservation data after successful purchase
+      dispatch(clearPaymentIntent());
+      dispatch(clearReservation());
+
       // Navigate to confirmation page
       router.push(
         `/confirmation?orderId=${result.orderNumber || result.orderId}`
@@ -307,7 +382,7 @@ export default function PaymentPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-8"
+          className="text-center mb-6"
         >
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3">
             <span className="bg-gradient-to-r from-primary via-pink-500 to-purple-500 bg-clip-text text-transparent">
@@ -318,6 +393,15 @@ export default function PaymentPage() {
             Complete your payment securely to receive your tickets
           </p>
         </motion.div>
+
+        {/* Countdown Timer */}
+        {storedReservation?.createdAt && !isExpired && (
+          <ReservationTimer
+            minutes={minutes}
+            seconds={seconds}
+            isWarning={isWarning}
+          />
+        )}
 
         {/* Two Column Layout */}
         <div className="grid lg:grid-cols-3 gap-8 items-start">

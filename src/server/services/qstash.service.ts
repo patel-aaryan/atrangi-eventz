@@ -1,10 +1,15 @@
 import { qstash } from "@/server/config/qstash";
-import { redis } from "@/server/config/redis";
+import { QStashCache } from "@/server/repository/redis/qstash.cache";
 
-const QSTASH_MESSAGE_PREFIX = "qstash:payment:";
-const RESERVATION_TTL = 1200; // 20 minutes in seconds
+const RESERVATION_TTL = 20 * 60;
 
 class QStashService {
+  private readonly qstashCache: QStashCache;
+
+  constructor() {
+    this.qstashCache = new QStashCache();
+  }
+
   /**
    * Schedule a PaymentIntent cleanup message
    * Message will be delivered after the reservation expires
@@ -20,11 +25,8 @@ class QStashService {
       retries: 3,
     });
 
-    // Store message ID in Redis so we can cancel it on successful payment
-    const messageKey = `${QSTASH_MESSAGE_PREFIX}${paymentIntentId}`;
-    await redis.set(messageKey, result.messageId, {
-      ex: RESERVATION_TTL + 60, // Keep slightly longer than message delay
-    });
+    // Store message ID in cache so we can cancel it on successful payment
+    await this.qstashCache.setMessageId(paymentIntentId, result.messageId);
 
     console.log(`[QStash] Scheduled cleanup for PaymentIntent ${paymentIntentId}, messageId: ${result.messageId}`);
 
@@ -36,19 +38,16 @@ class QStashService {
    */
   async cancelPaymentCleanup(paymentIntentId: string): Promise<boolean> {
     try {
-      const messageKey = `${QSTASH_MESSAGE_PREFIX}${paymentIntentId}`;
-      const messageId = await redis.get<string>(messageKey);
+      const messageId = await this.qstashCache.getMessageId(paymentIntentId);
 
       if (!messageId) {
         console.log(`[QStash] No scheduled cleanup found for PaymentIntent ${paymentIntentId}`);
         return false;
       }
 
-      // Cancel the scheduled message
       await qstash.messages.delete(messageId);
 
-      // Remove from Redis
-      await redis.del(messageKey);
+      await this.qstashCache.deleteMessageId(paymentIntentId);
 
       console.log(`[QStash] Cancelled cleanup for PaymentIntent ${paymentIntentId}, messageId: ${messageId}`);
       return true;

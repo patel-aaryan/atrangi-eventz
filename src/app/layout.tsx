@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Navbar } from "@/components/navbar";
-import { ConditionalFooter } from "@/components/conditional-footer";
+import { Footer } from "@/components/footer";
 import { UpcomingEventBanner } from "@/components/upcoming-event-banner";
 import { generateSEOMetadata } from "@/lib/metadata";
 import { AuthProvider } from "@/providers/auth-provider";
@@ -39,7 +39,7 @@ export default function RootLayout({
                 <Navbar />
                 <UpcomingEventBanner />
                 <main>{children}</main>
-                <ConditionalFooter />
+                <Footer />
               </TicketProvider>
             </AuthProvider>
           </QueryProvider>

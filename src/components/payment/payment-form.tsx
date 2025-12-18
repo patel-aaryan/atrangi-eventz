@@ -216,22 +216,6 @@ export function PaymentForm({
                 {errors.agreeToTerms}
               </p>
             )}
-
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="newsletter"
-                checked={formData.subscribeToNewsletter}
-                onCheckedChange={(checked) =>
-                  handleInputChange("subscribeToNewsletter", checked as boolean)
-                }
-              />
-              <Label
-                htmlFor="newsletter"
-                className="text-sm font-normal cursor-pointer leading-relaxed"
-              >
-                Send me updates about future events and exclusive offers
-              </Label>
-            </div>
           </div>
 
           <Separator />

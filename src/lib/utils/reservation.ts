@@ -92,8 +92,9 @@ export async function handleBatchReservation(
     sessionId,
   });
 
+  // Return createdAt timestamp so client can sync reservation timer
   return NextResponse.json(
-    { reservationIds: result.reservationIds },
+    { reservationIds: result.reservationIds, createdAt: Date.now() },
     { status: 200 }
   );
 }
@@ -117,8 +118,9 @@ export async function handleSingleReservation(
     sessionId,
   });
 
+  // Return createdAt timestamp so client can sync reservation timer
   return NextResponse.json(
-    { reservationId: result.reservationId },
+    { reservationId: result.reservationId, createdAt: Date.now() },
     { status: 200 }
   );
 }
