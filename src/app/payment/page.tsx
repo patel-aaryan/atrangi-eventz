@@ -335,7 +335,6 @@ export default function PaymentPage() {
         promoCode: undefined,
       };
 
-        const errorBody = await response.json().catch(() => ({}));
       let result: CompletePurchaseResult;
       try {
         result = await completePurchase(payload);
