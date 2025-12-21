@@ -57,12 +57,11 @@ export class TicketRepository {
         stripe_payment_intent_id,
         stripe_charge_id,
         stripe_payment_method_id,
-        stripe_customer_id,
         payment_status,
         qr_code_data,
         status
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27
       )
       RETURNING *
     `;
@@ -92,7 +91,6 @@ export class TicketRepository {
       data.stripePaymentIntentId || null,
       data.stripeChargeId || null,
       data.stripePaymentMethodId || null,
-      data.stripeCustomerId || null,
       data.paymentStatus || "pending",
       data.qrCodeData || null,
       "pending",
@@ -126,9 +124,9 @@ export class TicketRepository {
             buyer_first_name, buyer_last_name, buyer_email, buyer_phone,
             billing_zip, billing_address, amount_paid, currency,
             stripe_payment_intent_id, stripe_charge_id, stripe_payment_method_id,
-            stripe_customer_id, payment_status, qr_code_data, status
+            payment_status, qr_code_data, status
           ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27
           )
           RETURNING *
         `;
@@ -158,7 +156,6 @@ export class TicketRepository {
           ticketData.stripePaymentIntentId || null,
           ticketData.stripeChargeId || null,
           ticketData.stripePaymentMethodId || null,
-          ticketData.stripeCustomerId || null,
           ticketData.paymentStatus || "pending",
           ticketData.qrCodeData || null,
           "pending",
@@ -236,7 +233,6 @@ export class TicketRepository {
       stripe_payment_intent_id: row.stripe_payment_intent_id,
       stripe_charge_id: row.stripe_charge_id,
       stripe_payment_method_id: row.stripe_payment_method_id,
-      stripe_customer_id: row.stripe_customer_id,
       payment_status: row.payment_status,
       status: row.status,
       is_checked_in: row.is_checked_in,

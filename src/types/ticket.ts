@@ -56,7 +56,6 @@ export interface Ticket {
   stripe_payment_intent_id: string | null;
   stripe_charge_id: string | null;
   stripe_payment_method_id: string | null;
-  stripe_customer_id: string | null;
   payment_status: string | null;
   status: string;
   is_checked_in: boolean;
@@ -65,5 +64,3 @@ export interface Ticket {
   created_at: Date;
   updated_at: Date;
 }
-
-

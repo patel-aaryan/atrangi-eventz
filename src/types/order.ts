@@ -38,12 +38,9 @@ export interface Order {
   stripe_payment_intent_id: string | null;
   stripe_charge_id: string | null;
   stripe_payment_method_id: string | null;
-  stripe_customer_id: string | null;
   payment_status: string | null;
   status: string;
   purchased_at: Date;
   created_at: Date;
   updated_at: Date;
 }
-
-
