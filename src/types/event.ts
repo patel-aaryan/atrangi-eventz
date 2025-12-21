@@ -101,3 +101,35 @@ export interface UpcomingEventItem {
   banner_image: string | null;
   ticket_tiers: TicketTier[];
 }
+
+// Full event details for event detail page
+export interface EventDetail {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  start_date: string;
+  end_date: string;
+  venue_name: string | null;
+  venue_address: string | null;
+  venue_city: string | null;
+  venue_province: string | null;
+  venue_postal_code: string | null;
+  venue_country: string | null;
+  total_capacity: number | null;
+  total_tickets_sold: number;
+  tickets_remaining: number;
+  is_sold_out: boolean;
+  ticket_sales_open: string | null;
+  ticket_sales_close: string | null;
+  thumbnail_image: string | null;
+  banner_image: string | null;
+  ticket_tiers: TicketTier[];
+  num_sponsors: number;
+  num_volunteers: number;
+  status: EventStatus;
+  meta_title: string | null;
+  meta_description: string | null;
+  tags: string[];
+  gallery_images: string[];
+}
