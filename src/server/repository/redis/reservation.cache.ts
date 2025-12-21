@@ -1,10 +1,5 @@
 import { redis } from "@/server/config/redis";
-
-interface ReservationData {
-  sessionId: string;
-  quantity: number;
-  tierIndex: number;
-}
+import type { ReservationData } from "@/server/types/reservation";
 
 /**
  * Reservation Cache - Handles all Redis operations for ticket reservations
@@ -51,7 +46,7 @@ export class ReservationCache {
   /**
    * Acquire a lock with retry mechanism
    * Uses exponential backoff with jitter to prevent thundering herd
-   * 
+   *
    * @param eventId - The event ID to acquire lock for
    * @param maxRetries - Maximum number of retry attempts (default: 4)
    * @param baseDelayMs - Base delay in milliseconds for exponential backoff (default: 100ms)

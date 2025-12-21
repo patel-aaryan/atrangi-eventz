@@ -3,7 +3,7 @@ import type {
   UpcomingEventItem,
   EventDetail,
 } from "@/types/event";
-import type { GalleryImage } from "@/server/services/r2.service";
+import type { GalleryImage } from "@/server/types/r2";
 
 /**
  * API Client for Events

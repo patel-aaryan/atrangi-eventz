@@ -1,22 +1,9 @@
 import { getStripeInstance } from "@/server/config/stripe";
 import type Stripe from "stripe";
-
-interface CreatePaymentIntentParams {
-  amount: number; // Amount in cents
-  eventId: string;
-  sessionId: string;
-  eventTitle?: string;
-  ticketSelections?: Array<{
-    ticketId: string;
-    ticketName: string;
-    quantity: number;
-  }>;
-}
-
-interface CreatePaymentIntentResult {
-  clientSecret: string;
-  paymentIntentId: string;
-}
+import type {
+  CreatePaymentIntentParams,
+  CreatePaymentIntentResult,
+} from "@/server/types/stripe";
 
 /**
  * Stripe Service - Handles Stripe payment operations
@@ -100,7 +87,8 @@ class StripeService {
       typeof paymentMethod === "string" ? paymentMethod : paymentMethod?.id;
 
     const customer = pi.customer;
-    const stripeCustomerId = typeof customer === "string" ? customer : customer?.id;
+    const stripeCustomerId =
+      typeof customer === "string" ? customer : customer?.id;
 
     return {
       stripeChargeId,

@@ -2,21 +2,7 @@ import { mg } from "../config/mailgun";
 import { render } from "@react-email/render";
 import TicketConfirmationEmail from "../emails/TicketConfirmationEmail";
 import { pdfService } from "./pdf.service";
-
-export interface EmailAttachment {
-  filename: string;
-  data: Buffer | string;
-  contentType?: string;
-}
-
-export interface EmailOptions {
-  to: string | string[];
-  subject: string;
-  text?: string;
-  html?: string;
-  from?: string;
-  attachments?: EmailAttachment[];
-}
+import type { EmailOptions } from "../types/email";
 
 class EmailService {
   private readonly domain: string;

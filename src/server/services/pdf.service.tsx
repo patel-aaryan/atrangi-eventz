@@ -1,4 +1,3 @@
-import React from "react";
 import { renderToBuffer } from "@react-pdf/renderer";
 import type { TicketPdfPayload, GeneratePdfResult } from "../types/pdf";
 import { TicketDocument } from "../pdfs/ticketDocument";

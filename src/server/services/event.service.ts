@@ -1,6 +1,7 @@
 import { EventRepository } from "@/server/repository/postgres/event.repository";
 import { EventCache } from "@/server/repository/redis/event.cache";
-import { r2Service, GalleryImage } from "@/server/services/r2.service";
+import { r2Service } from "@/server/services/r2.service";
+import type { GalleryImage } from "@/server/types/r2";
 import type {
   PastEventListItem,
   UpcomingEventItem,

@@ -8,27 +8,12 @@ import {
   groupReservationsByTier,
   validateAvailability,
 } from "@/server/utils/reservation";
-
-interface ReserveTicketsParams {
-  eventId: string;
-  tierIndex: number;
-  requestedQuantity: number;
-  sessionId: string;
-}
-
-interface ReserveTicketsResult {
-  reservationId: string;
-}
-
-interface BatchReserveTicketsParams {
-  eventId: string;
-  reservations: Array<{ tierIndex: number; quantity: number }>;
-  sessionId: string;
-}
-
-interface BatchReserveTicketsResult {
-  reservationIds: string[];
-}
+import type {
+  ReserveTicketsParams,
+  ReserveTicketsResult,
+  BatchReserveTicketsParams,
+  BatchReserveTicketsResult,
+} from "@/server/types/reservation";
 
 /**
  * Reservation Service - Contains business logic for ticket reservations
@@ -77,7 +62,8 @@ class ReservationService {
     }
 
     // Acquire lock for the event with retry mechanism
-    const lockAcquired = await this.reservationCache.acquireLockWithRetry(eventId);
+    const lockAcquired =
+      await this.reservationCache.acquireLockWithRetry(eventId);
     if (!lockAcquired) {
       throw new Error(
         "Unable to process your request due to high demand. Please try again in a moment."
@@ -131,8 +117,10 @@ class ReservationService {
     eventId: string,
     sessionId: string
   ): Promise<Array<{ tierIndex: number; quantity: number }>> {
-    const reservations =
-      await this.reservationCache.getReservationsBySession(eventId, sessionId);
+    const reservations = await this.reservationCache.getReservationsBySession(
+      eventId,
+      sessionId
+    );
     return reservations.map((reservation) => ({
       tierIndex: reservation.tierIndex,
       quantity: reservation.quantity,
@@ -178,7 +166,8 @@ class ReservationService {
     );
 
     // Acquire lock for the event with retry mechanism
-    const lockAcquired = await this.reservationCache.acquireLockWithRetry(eventId);
+    const lockAcquired =
+      await this.reservationCache.acquireLockWithRetry(eventId);
     if (!lockAcquired) {
       throw new Error(
         "Unable to process your request due to high demand. Please try again in a moment."

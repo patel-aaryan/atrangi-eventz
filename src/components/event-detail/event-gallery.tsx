@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { GalleryImage } from "@/server/services/r2.service";
+import type { GalleryImage } from "@/server/types/r2";
 
 interface EventGalleryProps {
   images: GalleryImage[];
