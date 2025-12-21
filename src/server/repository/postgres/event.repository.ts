@@ -121,7 +121,6 @@ export class EventRepository {
   /**
    * Map database row to PastEventListItem object
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private mapRowToPastEventListItem(row: any): PastEventListItem {
     return {
       id: row.id,
@@ -142,7 +141,6 @@ export class EventRepository {
   /**
    * Map database row to UpcomingEventItem object
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private mapRowToUpcomingEventItem(row: any): UpcomingEventItem {
     return {
       id: row.id,
@@ -219,7 +217,6 @@ export class EventRepository {
   /**
    * Map database row to EventDetail object
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private mapRowToEventDetail(row: any): EventDetail {
     return {
       id: row.id,

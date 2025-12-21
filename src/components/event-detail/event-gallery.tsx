@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
@@ -18,15 +18,21 @@ export function EventGallery({
 }: Readonly<EventGalleryProps>) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  const openLightbox = (index: number) => {
-    setSelectedIndex(index);
-    document.body.style.overflow = "hidden";
-  };
+  useEffect(() => {
+    if (selectedIndex !== null) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
 
-  const closeLightbox = () => {
-    setSelectedIndex(null);
-    document.body.style.overflow = "";
-  };
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [selectedIndex]);
+
+  const openLightbox = (index: number) => setSelectedIndex(index);
+
+  const closeLightbox = () => setSelectedIndex(null);
 
   const goToPrevious = () => {
     if (selectedIndex === null) return;
@@ -48,9 +54,7 @@ export function EventGallery({
     if (e.key === "ArrowRight") goToNext();
   };
 
-  if (images.length === 0) {
-    return null;
-  }
+  if (images.length === 0) return null;
 
   return (
     <section className="py-12">

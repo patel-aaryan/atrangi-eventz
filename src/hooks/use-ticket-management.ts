@@ -1,7 +1,11 @@
 import { useCallback } from "react";
 
 interface UseTicketManagementProps {
-  setSelectedTickets: (tickets: Record<string, number> | ((prev: Record<string, number>) => Record<string, number>)) => void;
+  setSelectedTickets: (
+    tickets:
+      | Record<string, number>
+      | ((prev: Record<string, number>) => Record<string, number>)
+  ) => void;
 }
 
 interface UseTicketManagementReturn {
@@ -34,7 +38,6 @@ export function useTicketManagement({
         const newQty = Math.max(0, currentQty - quantity);
 
         if (newQty === 0) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [ticketId]: _, ...rest } = prev;
           return rest;
         }
@@ -50,7 +53,6 @@ export function useTicketManagement({
       if (quantity <= 0) {
         // Remove ticket if quantity is 0 or negative
         setSelectedTickets((prev) => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [ticketId]: _, ...rest } = prev;
           return rest;
         });
@@ -75,4 +77,3 @@ export function useTicketManagement({
     clearSelections,
   };
 }
-

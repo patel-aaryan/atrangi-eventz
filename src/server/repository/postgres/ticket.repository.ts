@@ -207,7 +207,6 @@ export class TicketRepository {
     return this.mapRowToTicket(result.rows[0]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private mapRowToTicket(row: any): Ticket {
     return {
       id: row.id,
@@ -248,4 +247,3 @@ export class TicketRepository {
     };
   }
 }
-

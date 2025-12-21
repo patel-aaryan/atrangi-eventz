@@ -97,7 +97,6 @@ export class ReservationCache {
 
       do {
         // Upstash Redis scan returns [cursor, keys[]] where cursor is a string
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result: any = await redis.scan(cursor, {
           match: pattern,
           count: 100,

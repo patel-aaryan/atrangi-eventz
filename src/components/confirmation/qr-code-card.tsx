@@ -18,10 +18,7 @@ export function QRCodeCard({
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!qrCodeValue) {
-      setQrCodeData(null);
-      return;
-    }
+    if (!qrCodeValue) return;
 
     QRCode.toDataURL(qrCodeValue)
       .then((dataUrl) => {

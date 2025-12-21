@@ -90,7 +90,6 @@ export class OrderRepository {
     return this.mapRowToOrder(result.rows[0]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private mapRowToOrder(row: any): Order {
     return {
       id: row.id,
@@ -120,4 +119,3 @@ export class OrderRepository {
     };
   }
 }
-

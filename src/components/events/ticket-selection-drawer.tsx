@@ -52,7 +52,6 @@ export function TicketSelectionDrawer({
       );
 
       if (newQty === 0) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [ticketId]: _, ...rest } = prev;
         return rest;
       }

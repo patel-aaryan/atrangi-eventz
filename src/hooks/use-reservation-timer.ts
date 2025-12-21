@@ -27,24 +27,26 @@ export function useReservationTimer({
 }: UseReservationTimerProps): UseReservationTimerReturn {
   const [timeRemaining, setTimeRemaining] = useState(duration);
   const [isExpired, setIsExpired] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const startTimeRef = useRef<number | null>(startTime);
   const hasExpiredRef = useRef(false);
 
   // Store onExpire in a ref to avoid it triggering effect re-runs
   const onExpireRef = useRef(onExpire);
-  onExpireRef.current = onExpire;
+
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+  }, [onExpire]);
 
   // Stable callback that reads from the ref
   const handleExpire = useCallback(() => {
     onExpireRef.current();
   }, []);
 
+  // Calculate loading state based on enabled
+  const isLoading = !enabled;
+
   useEffect(() => {
-    if (!enabled) {
-      setIsLoading(false);
-      return;
-    }
+    if (!enabled) return;
 
     // Use provided startTime or set new one
     if (!startTimeRef.current) startTimeRef.current = startTime || Date.now();
@@ -54,19 +56,23 @@ export function useReservationTimer({
     const initialRemaining = duration - elapsed;
 
     if (initialRemaining <= 0) {
-      // Already expired
+      // Already expired - schedule state updates
       if (!hasExpiredRef.current) {
         hasExpiredRef.current = true;
-        setIsExpired(true);
-        setTimeRemaining(0);
-        handleExpire();
+        // Use setTimeout to avoid synchronous setState in effect
+        setTimeout(() => {
+          setIsExpired(true);
+          setTimeRemaining(0);
+          handleExpire();
+        }, 0);
       }
-      setIsLoading(false);
       return;
     }
 
-    setTimeRemaining(initialRemaining);
-    setIsLoading(false);
+    // Schedule state update
+    setTimeout(() => {
+      setTimeRemaining(initialRemaining);
+    }, 0);
 
     const intervalId = setInterval(() => {
       const elapsed = Date.now() - (startTimeRef.current || Date.now());
@@ -104,4 +110,3 @@ export function useReservationTimer({
     isLoading,
   };
 }
-
