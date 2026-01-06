@@ -251,4 +251,69 @@ export class EventRepository {
       gallery_images: row.gallery_images || [],
     };
   }
+
+  /**
+   * Increment total tickets sold for an event
+   * Also updates the sold count in the ticket_tiers JSONB array
+   * @param eventId - The event ID
+   * @param ticketsBySier - Array of {tierIndex, quantity} to increment
+   */
+  async incrementTicketsSold(
+    eventId: string,
+    ticketsByTier: Array<{ tierIndex: number; quantity: number }>
+  ): Promise<void> {
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
+      // Calculate total quantity across all tiers
+      const totalQuantity = ticketsByTier.reduce(
+        (sum, tier) => sum + tier.quantity,
+        0
+      );
+
+      // Update total_tickets_sold
+      await client.query(
+        `
+        UPDATE events 
+        SET total_tickets_sold = total_tickets_sold + $1
+        WHERE id = $2
+      `,
+        [totalQuantity, eventId]
+      );
+
+      // Update each tier's sold count in the ticket_tiers JSONB
+      for (const { tierIndex, quantity } of ticketsByTier) {
+        await client.query(
+          `
+          UPDATE events
+          SET ticket_tiers = jsonb_set(
+            ticket_tiers,
+            $1,
+            (COALESCE((ticket_tiers->$2->>'sold')::integer, 0) + $3)::text::jsonb
+          )
+          WHERE id = $4
+        `,
+          [
+            `{${tierIndex},sold}`, // JSONB path for the sold field
+            tierIndex.toString(), // Access the tier by index
+            quantity,
+            eventId,
+          ]
+        );
+      }
+
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      console.error("Error incrementing tickets sold:", error);
+      throw new Error(
+        `Failed to update ticket counts for event ${eventId}: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    } finally {
+      client.release();
+    }
+  }
 }

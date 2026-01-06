@@ -135,13 +135,24 @@ class TicketService {
     // 5. Update order status to confirmed
     await this.orderRepository.updateStatus(order.id, "confirmed");
 
-    // 6. Prepare event location for email
+    // 6. Increment event ticket counts
+    // Group tickets by tier to update both total_tickets_sold and tier-specific sold counts
+    const ticketsByTier = data.ticketSelections.map((selection) => ({
+      tierIndex: selection.tierIndex,
+      quantity: selection.quantity,
+    }));
+    await this.eventRepository.incrementTicketsSold(
+      data.eventId,
+      ticketsByTier
+    );
+
+    // 7. Prepare event location for email
     const eventLocation =
       event.venue_name && event.venue_city
         ? `${event.venue_name}, ${event.venue_city}`
         : event.venue_name || event.venue_city || "TBA";
 
-    // 7. Send confirmation email
+    // 8. Send confirmation email
     await emailService.sendTicketConfirmationEmail({
       to: data.contactInfo.email,
       orderNumber: order.order_number,
