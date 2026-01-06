@@ -1,8 +1,8 @@
 import { redis } from "@/server/config/redis";
 import type {
-  UpcomingEventItem,
+  UpcomingEventStatic,
   PastEventListItem,
-  EventDetail,
+  EventDetailStatic,
 } from "@/types/event";
 import type { GalleryImage } from "@/server/types/r2";
 
@@ -22,12 +22,14 @@ export class EventCache {
   private readonly NO_EVENT_MARKER = "__NO_EVENT__"; // Special marker for null results
 
   /**
-   * Get upcoming event from cache
+   * Get upcoming event static data from cache
    * Returns undefined if not in cache, null if cached as "no event"
    */
-  async getUpcomingEvent(): Promise<UpcomingEventItem | null | undefined> {
+  async getUpcomingEventStatic(): Promise<
+    UpcomingEventStatic | null | undefined
+  > {
     try {
-      console.log("🔍 [Cache] Checking Redis for upcoming event...");
+      console.log("🔍 [Cache] Checking Redis for upcoming event (static)...");
 
       // First check if key exists
       const exists = await redis.exists(this.UPCOMING_EVENT_CACHE_KEY);
@@ -38,7 +40,7 @@ export class EventCache {
       }
 
       // Key exists, get the value
-      const cached = await redis.get<UpcomingEventItem | string>(
+      const cached = await redis.get<UpcomingEventStatic | string>(
         this.UPCOMING_EVENT_CACHE_KEY
       );
 
@@ -50,8 +52,8 @@ export class EventCache {
 
       // It's an actual event object
       if (cached) {
-        console.log("✅ [Cache] HIT - Found cached upcoming event");
-        return cached as UpcomingEventItem;
+        console.log("✅ [Cache] HIT - Found cached upcoming event (static)");
+        return cached as UpcomingEventStatic;
       }
 
       console.log("❌ [Cache] MISS - Key exists but value is unexpected");
@@ -63,17 +65,17 @@ export class EventCache {
   }
 
   /**
-   * Cache an upcoming event
+   * Cache upcoming event static data
    */
-  async setUpcomingEvent(event: UpcomingEventItem): Promise<void> {
+  async setUpcomingEventStatic(event: UpcomingEventStatic): Promise<void> {
     try {
       console.log(
-        `💾 [Cache] Storing upcoming event (TTL: ${this.UPCOMING_EVENT_CACHE_TTL}s)`
+        `💾 [Cache] Storing upcoming event static data (TTL: ${this.UPCOMING_EVENT_CACHE_TTL}s)`
       );
       await redis.set(this.UPCOMING_EVENT_CACHE_KEY, event, {
         ex: this.UPCOMING_EVENT_CACHE_TTL,
       });
-      console.log("✅ [Cache] Event cached successfully");
+      console.log("✅ [Cache] Event static data cached successfully");
     } catch (error) {
       console.error("⚠️ [Cache] Error writing to Redis:", error);
       // Don't throw - caching failures shouldn't break the app
@@ -155,13 +157,17 @@ export class EventCache {
   }
 
   /**
-   * Get event detail by slug from cache
+   * Get event detail static data by slug from cache
    * Returns undefined if not in cache, null if cached as "no event"
    */
-  async getEventDetail(slug: string): Promise<EventDetail | null | undefined> {
+  async getEventDetailStatic(
+    slug: string
+  ): Promise<EventDetailStatic | null | undefined> {
     try {
       const cacheKey = `${this.EVENT_DETAIL_CACHE_PREFIX}${slug}`;
-      console.log(`🔍 [Cache] Checking Redis for event detail: ${slug}`);
+      console.log(
+        `🔍 [Cache] Checking Redis for event detail (static): ${slug}`
+      );
 
       const exists = await redis.exists(cacheKey);
 
@@ -170,7 +176,7 @@ export class EventCache {
         return undefined;
       }
 
-      const cached = await redis.get<EventDetail | string>(cacheKey);
+      const cached = await redis.get<EventDetailStatic | string>(cacheKey);
 
       if (cached === this.NO_EVENT_MARKER) {
         console.log("✅ [Cache] HIT - Cached result: no event found");
@@ -178,8 +184,10 @@ export class EventCache {
       }
 
       if (cached) {
-        console.log(`✅ [Cache] HIT - Found cached event detail: ${slug}`);
-        return cached as EventDetail;
+        console.log(
+          `✅ [Cache] HIT - Found cached event detail (static): ${slug}`
+        );
+        return cached as EventDetailStatic;
       }
 
       console.log("❌ [Cache] MISS - Key exists but value is unexpected");
@@ -191,18 +199,21 @@ export class EventCache {
   }
 
   /**
-   * Cache event detail
+   * Cache event detail static data
    */
-  async setEventDetail(slug: string, event: EventDetail): Promise<void> {
+  async setEventDetailStatic(
+    slug: string,
+    event: EventDetailStatic
+  ): Promise<void> {
     try {
       const cacheKey = `${this.EVENT_DETAIL_CACHE_PREFIX}${slug}`;
       console.log(
-        `💾 [Cache] Storing event detail: ${slug} (TTL: ${this.EVENT_DETAIL_CACHE_TTL}s)`
+        `💾 [Cache] Storing event detail static data: ${slug} (TTL: ${this.EVENT_DETAIL_CACHE_TTL}s)`
       );
       await redis.set(cacheKey, event, {
         ex: this.EVENT_DETAIL_CACHE_TTL,
       });
-      console.log("✅ [Cache] Event detail cached successfully");
+      console.log("✅ [Cache] Event detail static data cached successfully");
     } catch (error) {
       console.error("⚠️ [Cache] Error writing event detail to Redis:", error);
     }

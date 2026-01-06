@@ -2,7 +2,9 @@ import { pool } from "@/server/config/postgres";
 import type {
   PastEventListItem,
   UpcomingEventItem,
-  EventDetail,
+  UpcomingEventStatic,
+  EventDetailStatic,
+  TicketAvailability,
 } from "@/types/event";
 
 /**
@@ -78,10 +80,11 @@ export class EventRepository {
   }
 
   /**
-   * Find the next upcoming published event
+   * Find the next upcoming published event (static data only)
    * Returns null if no upcoming event is found
+   * This excludes dynamic ticket counts for efficient caching
    */
-  async findUpcoming(): Promise<UpcomingEventItem | null> {
+  async findUpcomingStatic(): Promise<UpcomingEventStatic | null> {
     const query = `
       SELECT 
         id, 
@@ -93,9 +96,6 @@ export class EventRepository {
         venue_name, 
         venue_city,
         total_capacity,
-        total_tickets_sold,
-        tickets_remaining,
-        is_sold_out,
         ticket_sales_open,
         ticket_sales_close,
         thumbnail_image,
@@ -115,7 +115,41 @@ export class EventRepository {
       return null;
     }
 
-    return this.mapRowToUpcomingEventItem(result.rows[0]);
+    return this.mapRowToUpcomingEventStatic(result.rows[0]);
+  }
+
+  /**
+   * Get ticket availability for an event (dynamic data only)
+   * Returns current ticket counts and sold status
+   */
+  async getTicketAvailability(
+    eventId: string
+  ): Promise<TicketAvailability | null> {
+    const query = `
+      SELECT 
+        total_tickets_sold,
+        tickets_remaining,
+        is_sold_out,
+        ticket_tiers
+      FROM events
+      WHERE id = $1
+    `;
+
+    const result = await pool.query(query, [eventId]);
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    const row = result.rows[0];
+    const ticketTiers = row.ticket_tiers || [];
+
+    return {
+      total_tickets_sold: row.total_tickets_sold || 0,
+      tickets_remaining: row.tickets_remaining || 0,
+      is_sold_out: row.is_sold_out || false,
+      ticket_tiers_sold: ticketTiers.map((tier: any) => tier.sold || 0),
+    };
   }
 
   /**
@@ -166,10 +200,45 @@ export class EventRepository {
   }
 
   /**
-   * Find an event by slug with full details
-   * Returns null if event is not found or not public
+   * Map database row to UpcomingEventStatic object (no ticket counts)
    */
-  async findBySlug(slug: string): Promise<EventDetail | null> {
+  private mapRowToUpcomingEventStatic(row: any): UpcomingEventStatic {
+    const ticketTiers = row.ticket_tiers || [];
+
+    return {
+      id: row.id,
+      title: row.title,
+      slug: row.slug,
+      description: row.description,
+      start_date: row.start_date?.toISOString() || row.start_date,
+      end_date: row.end_date?.toISOString() || row.end_date,
+      venue_name: row.venue_name,
+      venue_city: row.venue_city,
+      total_capacity: row.total_capacity,
+      ticket_sales_open:
+        row.ticket_sales_open?.toISOString() || row.ticket_sales_open,
+      ticket_sales_close:
+        row.ticket_sales_close?.toISOString() || row.ticket_sales_close,
+      thumbnail_image: row.thumbnail_image,
+      banner_image: row.banner_image,
+      // Map ticket tiers without sold counts
+      ticket_tiers: ticketTiers.map((tier: any) => ({
+        name: tier.name,
+        price: tier.price,
+        capacity: tier.capacity,
+        available_until: tier.available_until,
+        description: tier.description,
+        features: tier.features,
+      })),
+    };
+  }
+
+  /**
+   * Find an event by slug (static data only)
+   * Returns null if event is not found or not public
+   * This excludes dynamic ticket counts for efficient caching
+   */
+  async findBySlugStatic(slug: string): Promise<EventDetailStatic | null> {
     const query = `
       SELECT 
         id, 
@@ -185,9 +254,6 @@ export class EventRepository {
         venue_postal_code,
         venue_country,
         total_capacity,
-        total_tickets_sold,
-        tickets_remaining,
-        is_sold_out,
         ticket_sales_open,
         ticket_sales_close,
         thumbnail_image,
@@ -211,13 +277,15 @@ export class EventRepository {
       return null;
     }
 
-    return this.mapRowToEventDetail(result.rows[0]);
+    return this.mapRowToEventDetailStatic(result.rows[0]);
   }
 
   /**
-   * Map database row to EventDetail object
+   * Map database row to EventDetailStatic object (no ticket counts)
    */
-  private mapRowToEventDetail(row: any): EventDetail {
+  private mapRowToEventDetailStatic(row: any): EventDetailStatic {
+    const ticketTiers = row.ticket_tiers || [];
+
     return {
       id: row.id,
       title: row.title,
@@ -232,16 +300,21 @@ export class EventRepository {
       venue_postal_code: row.venue_postal_code,
       venue_country: row.venue_country,
       total_capacity: row.total_capacity,
-      total_tickets_sold: row.total_tickets_sold || 0,
-      tickets_remaining: row.tickets_remaining || 0,
-      is_sold_out: row.is_sold_out || false,
       ticket_sales_open:
         row.ticket_sales_open?.toISOString() || row.ticket_sales_open,
       ticket_sales_close:
         row.ticket_sales_close?.toISOString() || row.ticket_sales_close,
       thumbnail_image: row.thumbnail_image,
       banner_image: row.banner_image,
-      ticket_tiers: row.ticket_tiers || [],
+      // Map ticket tiers without sold counts
+      ticket_tiers: ticketTiers.map((tier: any) => ({
+        name: tier.name,
+        price: tier.price,
+        capacity: tier.capacity,
+        available_until: tier.available_until,
+        description: tier.description,
+        features: tier.features,
+      })),
       num_sponsors: row.num_sponsors || 0,
       num_volunteers: row.num_volunteers || 0,
       status: row.status,

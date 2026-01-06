@@ -5,7 +5,9 @@ import type { GalleryImage } from "@/server/types/r2";
 import type {
   PastEventListItem,
   UpcomingEventItem,
+  UpcomingEventStatic,
   EventDetail,
+  EventDetailStatic,
 } from "@/types/event";
 
 /**
@@ -46,61 +48,145 @@ class EventService {
   }
 
   /**
-   * Get the next upcoming event with caching
+   * Get the next upcoming event with caching (optimized for dynamic ticket counts)
+   * Caches static data separately and always fetches fresh ticket availability
    * Returns null if no upcoming event is found
    */
   async getUpcomingEvent(): Promise<UpcomingEventItem | null> {
-    // Try to get from cache first
-    const cached = await this.eventCache.getUpcomingEvent();
+    // Try to get static data from cache first
+    const cachedStatic = await this.eventCache.getUpcomingEventStatic();
 
-    // Cache hit
-    if (cached !== undefined) {
-      console.log("📦 [Service] Returning cached result");
-      return cached;
-    }
+    let staticData: UpcomingEventStatic | null;
 
-    // Cache miss - query database
-    console.log("🗄️ [Service] Fetching from database...");
-    const event = await this.eventRepository.findUpcoming();
+    if (cachedStatic === undefined) {
+      // Cache miss - query database for static data
+      console.log("🗄️ [Service] Fetching static data from database...");
+      staticData = await this.eventRepository.findUpcomingStatic();
 
-    // Store result in cache
-    if (event) {
-      await this.eventCache.setUpcomingEvent(event);
+      // Store result in cache
+      if (staticData) {
+        await this.eventCache.setUpcomingEventStatic(staticData);
+      } else {
+        await this.eventCache.setNoUpcomingEvent();
+      }
     } else {
-      await this.eventCache.setNoUpcomingEvent();
+      // Cache hit for static data
+      console.log("📦 [Service] Using cached static data");
+      staticData = cachedStatic;
     }
 
-    console.log("✅ [Service] Database query complete");
-    return event;
+    // If no event exists, return null
+    if (!staticData) {
+      console.log("✅ [Service] No upcoming event found");
+      return null;
+    }
+
+    // Always fetch fresh ticket availability
+    console.log("🎫 [Service] Fetching fresh ticket availability...");
+    const availability = await this.eventRepository.getTicketAvailability(
+      staticData.id
+    );
+
+    if (!availability) {
+      console.error("⚠️ [Service] Failed to fetch ticket availability");
+      // Fallback to zeros if availability fetch fails
+      return {
+        ...staticData,
+        total_tickets_sold: 0,
+        tickets_remaining: staticData.total_capacity || 0,
+        is_sold_out: false,
+        ticket_tiers: staticData.ticket_tiers.map((tier) => ({
+          ...tier,
+          sold: 0,
+        })),
+      };
+    }
+
+    // Merge static data with fresh ticket availability
+    const mergedEvent: UpcomingEventItem = {
+      ...staticData,
+      total_tickets_sold: availability.total_tickets_sold,
+      tickets_remaining: availability.tickets_remaining,
+      is_sold_out: availability.is_sold_out,
+      ticket_tiers: staticData.ticket_tiers.map((tier, index) => ({
+        ...tier,
+        sold: availability.ticket_tiers_sold[index] || 0,
+      })),
+    };
+
+    console.log("✅ [Service] Event data merged successfully");
+    return mergedEvent;
   }
 
   /**
-   * Get event details by slug with caching
+   * Get event details by slug with caching (optimized for dynamic ticket counts)
+   * Caches static data separately and always fetches fresh ticket availability
    * Returns null if event is not found
    */
   async getEventBySlug(slug: string): Promise<EventDetail | null> {
-    // Try to get from cache first
-    const cached = await this.eventCache.getEventDetail(slug);
+    // Try to get static data from cache first
+    const cachedStatic = await this.eventCache.getEventDetailStatic(slug);
 
-    // Cache hit
-    if (cached !== undefined) {
-      console.log(`📦 [Service] Returning cached event detail: ${slug}`);
-      return cached;
-    }
+    let staticData: EventDetailStatic | null;
 
-    // Cache miss - query database
-    console.log(`🗄️ [Service] Fetching event detail from database: ${slug}`);
-    const event = await this.eventRepository.findBySlug(slug);
+    if (cachedStatic === undefined) {
+      // Cache miss - query database for static data
+      console.log(`🗄️ [Service] Fetching static data from database: ${slug}`);
+      staticData = await this.eventRepository.findBySlugStatic(slug);
 
-    // Store result in cache
-    if (event) {
-      await this.eventCache.setEventDetail(slug, event);
+      // Store result in cache
+      if (staticData) {
+        await this.eventCache.setEventDetailStatic(slug, staticData);
+      } else {
+        await this.eventCache.setNoEventDetail(slug);
+      }
     } else {
-      await this.eventCache.setNoEventDetail(slug);
+      // Cache hit for static data
+      console.log(`📦 [Service] Using cached static data for: ${slug}`);
+      staticData = cachedStatic;
     }
 
-    console.log("✅ [Service] Database query complete");
-    return event;
+    // If no event exists, return null
+    if (!staticData) {
+      console.log(`✅ [Service] No event found for slug: ${slug}`);
+      return null;
+    }
+
+    // Always fetch fresh ticket availability
+    console.log(`🎫 [Service] Fetching fresh ticket availability for: ${slug}`);
+    const availability = await this.eventRepository.getTicketAvailability(
+      staticData.id
+    );
+
+    if (!availability) {
+      console.error("⚠️ [Service] Failed to fetch ticket availability");
+      // Fallback to zeros if availability fetch fails
+      return {
+        ...staticData,
+        total_tickets_sold: 0,
+        tickets_remaining: staticData.total_capacity || 0,
+        is_sold_out: false,
+        ticket_tiers: staticData.ticket_tiers.map((tier) => ({
+          ...tier,
+          sold: 0,
+        })),
+      };
+    }
+
+    // Merge static data with fresh ticket availability
+    const mergedEvent: EventDetail = {
+      ...staticData,
+      total_tickets_sold: availability.total_tickets_sold,
+      tickets_remaining: availability.tickets_remaining,
+      is_sold_out: availability.is_sold_out,
+      ticket_tiers: staticData.ticket_tiers.map((tier, index) => ({
+        ...tier,
+        sold: availability.ticket_tiers_sold[index] || 0,
+      })),
+    };
+
+    console.log(`✅ [Service] Event data merged successfully for: ${slug}`);
+    return mergedEvent;
   }
 
   /**

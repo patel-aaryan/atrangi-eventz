@@ -111,9 +111,8 @@ class TicketService {
     }
 
     // Create all tickets
-    const createdTickets = await this.ticketRepository.createBatch(
-      ticketDataList
-    );
+    const createdTickets =
+      await this.ticketRepository.createBatch(ticketDataList);
 
     // 4. Generate and update QR codes with actual ticket codes
     const ticketsWithQRCodes = await Promise.all(
@@ -185,4 +184,3 @@ class TicketService {
 }
 
 export const ticketService = new TicketService();
-

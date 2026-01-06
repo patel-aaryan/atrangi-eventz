@@ -81,8 +81,26 @@ export interface PastEventListItem {
   thumbnail_image: string | null;
 }
 
-// Simplified type for upcoming event
-export interface UpcomingEventItem {
+// Ticket tier without dynamic sold count (for caching static data)
+export interface TicketTierStatic {
+  name: string;
+  price: number;
+  capacity: number;
+  available_until?: string | null;
+  description?: string;
+  features?: string[];
+}
+
+// Ticket availability info (dynamic data, always fetched fresh)
+export interface TicketAvailability {
+  total_tickets_sold: number;
+  tickets_remaining: number;
+  is_sold_out: boolean;
+  ticket_tiers_sold: number[]; // Array of sold counts per tier index
+}
+
+// Simplified type for upcoming event (static data only - cacheable)
+export interface UpcomingEventStatic {
   id: string;
   title: string;
   slug: string;
@@ -92,18 +110,23 @@ export interface UpcomingEventItem {
   venue_name: string | null;
   venue_city: string | null;
   total_capacity: number | null;
-  total_tickets_sold: number;
-  tickets_remaining: number;
-  is_sold_out: boolean;
   ticket_sales_open: string | null;
   ticket_sales_close: string | null;
   thumbnail_image: string | null;
   banner_image: string | null;
-  ticket_tiers: TicketTier[];
+  ticket_tiers: TicketTierStatic[];
 }
 
-// Full event details for event detail page
-export interface EventDetail {
+// Full upcoming event (static + dynamic data combined)
+export interface UpcomingEventItem extends UpcomingEventStatic {
+  total_tickets_sold: number;
+  tickets_remaining: number;
+  is_sold_out: boolean;
+  ticket_tiers: TicketTier[]; // Override with full tier info including sold counts
+}
+
+// Event detail static data (cacheable)
+export interface EventDetailStatic {
   id: string;
   title: string;
   slug: string;
@@ -117,14 +140,11 @@ export interface EventDetail {
   venue_postal_code: string | null;
   venue_country: string | null;
   total_capacity: number | null;
-  total_tickets_sold: number;
-  tickets_remaining: number;
-  is_sold_out: boolean;
   ticket_sales_open: string | null;
   ticket_sales_close: string | null;
   thumbnail_image: string | null;
   banner_image: string | null;
-  ticket_tiers: TicketTier[];
+  ticket_tiers: TicketTierStatic[];
   num_sponsors: number;
   num_volunteers: number;
   status: EventStatus;
@@ -132,4 +152,12 @@ export interface EventDetail {
   meta_description: string | null;
   tags: string[];
   gallery_images: string[];
+}
+
+// Full event details for event detail page (static + dynamic)
+export interface EventDetail extends EventDetailStatic {
+  total_tickets_sold: number;
+  tickets_remaining: number;
+  is_sold_out: boolean;
+  ticket_tiers: TicketTier[]; // Override with full tier info including sold counts
 }
