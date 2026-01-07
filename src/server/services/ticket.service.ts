@@ -134,16 +134,8 @@ class TicketService {
     // 5. Update order status to confirmed
     await this.orderRepository.updateStatus(order.id, "confirmed");
 
-    // 6. Increment event ticket counts
-    // Group tickets by tier to update both total_tickets_sold and tier-specific sold counts
-    const ticketsByTier = data.ticketSelections.map((selection) => ({
-      tierIndex: selection.tierIndex,
-      quantity: selection.quantity,
-    }));
-    await this.eventRepository.incrementTicketsSold(
-      data.eventId,
-      ticketsByTier
-    );
+    // 6. Ticket counts are automatically updated by the database trigger
+    // (update_event_ticket_counts_trigger) when tickets are inserted.
 
     // 7. Prepare event location for email
     const eventLocation =

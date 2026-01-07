@@ -28,8 +28,7 @@ export class EventRepository {
         venue_city,
         total_tickets_sold,
         num_sponsors,
-        num_volunteers,
-        thumbnail_image
+        num_volunteers
       FROM events
       WHERE status = 'completed' 
         AND is_public = true
@@ -63,8 +62,6 @@ export class EventRepository {
         is_sold_out,
         ticket_sales_open,
         ticket_sales_close,
-        thumbnail_image,
-        banner_image,
         ticket_tiers
       FROM events
       WHERE id = $1
@@ -98,8 +95,6 @@ export class EventRepository {
         total_capacity,
         ticket_sales_open,
         ticket_sales_close,
-        thumbnail_image,
-        banner_image,
         ticket_tiers
       FROM events
       WHERE status = 'published' 
@@ -169,7 +164,6 @@ export class EventRepository {
       total_tickets_sold: row.total_tickets_sold || 0,
       num_sponsors: row.num_sponsors || 0,
       num_volunteers: row.num_volunteers || 0,
-      thumbnail_image: row.thumbnail_image,
     };
   }
 
@@ -194,8 +188,6 @@ export class EventRepository {
         row.ticket_sales_open?.toISOString() || row.ticket_sales_open,
       ticket_sales_close:
         row.ticket_sales_close?.toISOString() || row.ticket_sales_close,
-      thumbnail_image: row.thumbnail_image,
-      banner_image: row.banner_image,
       ticket_tiers: row.ticket_tiers || [],
     };
   }
@@ -220,8 +212,6 @@ export class EventRepository {
         row.ticket_sales_open?.toISOString() || row.ticket_sales_open,
       ticket_sales_close:
         row.ticket_sales_close?.toISOString() || row.ticket_sales_close,
-      thumbnail_image: row.thumbnail_image,
-      banner_image: row.banner_image,
       // Map ticket tiers without sold counts
       ticket_tiers: ticketTiers.map((tier: any) => ({
         name: tier.name,
@@ -257,16 +247,13 @@ export class EventRepository {
         total_capacity,
         ticket_sales_open,
         ticket_sales_close,
-        thumbnail_image,
-        banner_image,
         ticket_tiers,
         num_sponsors,
         num_volunteers,
         status,
         meta_title,
         meta_description,
-        tags,
-        gallery_images
+        tags
       FROM events
       WHERE slug = $1
         AND is_public = true
@@ -305,8 +292,6 @@ export class EventRepository {
         row.ticket_sales_open?.toISOString() || row.ticket_sales_open,
       ticket_sales_close:
         row.ticket_sales_close?.toISOString() || row.ticket_sales_close,
-      thumbnail_image: row.thumbnail_image,
-      banner_image: row.banner_image,
       // Map ticket tiers without sold counts
       ticket_tiers: ticketTiers.map((tier: any) => ({
         name: tier.name,
@@ -322,72 +307,6 @@ export class EventRepository {
       meta_title: row.meta_title,
       meta_description: row.meta_description,
       tags: row.tags || [],
-      gallery_images: row.gallery_images || [],
     };
-  }
-
-  /**
-   * Increment total tickets sold for an event
-   * Also updates the sold count in the ticket_tiers JSONB array
-   * @param eventId - The event ID
-   * @param ticketsBySier - Array of {tierIndex, quantity} to increment
-   */
-  async incrementTicketsSold(
-    eventId: string,
-    ticketsByTier: Array<{ tierIndex: number; quantity: number }>
-  ): Promise<void> {
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
-
-      // Calculate total quantity across all tiers
-      const totalQuantity = ticketsByTier.reduce(
-        (sum, tier) => sum + tier.quantity,
-        0
-      );
-
-      // Update total_tickets_sold
-      await client.query(
-        `
-        UPDATE events 
-        SET total_tickets_sold = total_tickets_sold + $1
-        WHERE id = $2
-      `,
-        [totalQuantity, eventId]
-      );
-
-      // Update each tier's sold count in the ticket_tiers JSONB
-      for (const { tierIndex, quantity } of ticketsByTier) {
-        await client.query(
-          `
-          UPDATE events
-          SET ticket_tiers = jsonb_set(
-            ticket_tiers,
-            $1,
-            (COALESCE((ticket_tiers->$2->>'sold')::integer, 0) + $3)::text::jsonb
-          )
-          WHERE id = $4
-        `,
-          [
-            `{${tierIndex},sold}`, // JSONB path for the sold field
-            tierIndex.toString(), // Access the tier by index
-            quantity,
-            eventId,
-          ]
-        );
-      }
-
-      await client.query("COMMIT");
-    } catch (error) {
-      await client.query("ROLLBACK");
-      console.error("Error incrementing tickets sold:", error);
-      throw new Error(
-        `Failed to update ticket counts for event ${eventId}: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-    } finally {
-      client.release();
-    }
   }
 }

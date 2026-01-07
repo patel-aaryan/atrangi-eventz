@@ -41,10 +41,7 @@ export default function EventDetailPage() {
 
   return (
     <div className="min-h-screen">
-      <EventHero
-        event={event}
-        bannerUrl={bannerImage?.url || event.banner_image}
-      />
+      <EventHero event={event} bannerUrl={bannerImage?.url} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {galleryImages.length > 0 && (

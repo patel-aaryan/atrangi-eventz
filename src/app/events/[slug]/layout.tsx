@@ -41,14 +41,11 @@ export async function generateMetadata({
       ...(event.tags || []),
     ].filter(Boolean);
 
-    const ogImage = event.banner_image || event.thumbnail_image || undefined;
-
     return generatePageMetadata({
       title,
       description,
       path: `/events/${slug}`,
       keywords,
-      ogImage,
     });
   } catch (error) {
     console.error("Error generating metadata for event:", error);
