@@ -4,8 +4,11 @@ import type { TicketTier } from "@/types/event";
 /**
  * Transform TicketTier (from database) to TicketType (for frontend drawer)
  */
-export function transformTicketTier(tier: TicketTier, index: number): TicketType {
-  const available = tier.capacity - tier.sold;
+export function transformTicketTier(
+  tier: TicketTier,
+  index: number
+): TicketType {
+  const available = tier.remaining;
   return {
     id: `ticket-${index}`,
     name: tier.name,
@@ -16,4 +19,3 @@ export function transformTicketTier(tier: TicketTier, index: number): TicketType
     features: tier.features || [],
   };
 }
-

@@ -67,7 +67,7 @@ export function HeroSection({
               <Sparkles className="w-16 h-16 text-primary mx-auto mb-4" />
             </motion.div>
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight">
-              <span className="block bg-gradient-to-r from-primary via-pink-500 to-purple-500 bg-clip-text text-transparent">
+              <span className="inline-block pb-4 bg-gradient-to-r from-primary via-pink-500 to-purple-500 bg-clip-text text-transparent">
                 Atrangi Eventz
               </span>
             </h1>

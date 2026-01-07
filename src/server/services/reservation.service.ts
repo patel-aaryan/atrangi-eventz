@@ -53,11 +53,11 @@ class ReservationService {
     }
 
     const tier = event.ticket_tiers[tierIndex];
-    const tierCapacity = tier.capacity;
+    const tierRemaining = tier.remaining;
 
-    if (requestedQuantity > tierCapacity) {
+    if (requestedQuantity > tierRemaining) {
       throw new Error(
-        `Requested quantity (${requestedQuantity}) exceeds tier capacity (${tierCapacity})`
+        `Requested quantity (${requestedQuantity}) exceeds tier remaining tickets (${tierRemaining})`
       );
     }
 
@@ -71,11 +71,11 @@ class ReservationService {
     }
 
     try {
-      // 1. Sum sold tickets from Postgres
-      const soldTickets = await this.ticketRepository.countSoldTicketsByTier(
-        eventId,
-        tierIndex
-      );
+      // 1. Get current remaining tickets from event
+      const currentEvent = await this.eventRepository.findById(eventId);
+      if (!currentEvent)
+        throw new Error(`Event with ID ${eventId} does not exist`);
+      const remainingTickets = currentEvent.ticket_tiers[tierIndex].remaining;
 
       // 2. Get reserved tickets from Redis and sum for this specific tier
       const reservations = await this.reservationCache.getReservations(eventId);
@@ -84,8 +84,7 @@ class ReservationService {
         .reduce((sum, reservation) => sum + reservation.quantity, 0);
 
       // 3. Calculate available tickets
-      const totalUsed = soldTickets + reservedTickets;
-      const available = tierCapacity - totalUsed;
+      const available = remainingTickets - reservedTickets;
 
       // 4. Check if requested quantity is available
       if (requestedQuantity > available) {
@@ -175,14 +174,15 @@ class ReservationService {
     }
 
     try {
-      // Get all sold tickets for all tiers we need
-      const soldTicketsPromises = tierValidations.map((validation) =>
-        this.ticketRepository.countSoldTicketsByTier(
-          eventId,
-          validation.tierIndex
-        )
+      // Get current remaining tickets for all tiers we need
+      const currentEvent = await this.eventRepository.findById(eventId);
+      if (!currentEvent)
+        throw new Error(`Event with ID ${eventId} does not exist`);
+
+      const remainingTicketsByTier = tierValidations.map(
+        (validation) =>
+          currentEvent.ticket_tiers[validation.tierIndex].remaining
       );
-      const soldTicketsByTier = await Promise.all(soldTicketsPromises);
 
       // Get all reserved tickets from Redis
       const allReservations =
@@ -191,7 +191,7 @@ class ReservationService {
       // Calculate tier availability
       const tierAvailability = calculateTierAvailability(
         tierValidations,
-        soldTicketsByTier,
+        remainingTicketsByTier,
         allReservations
       );
 

@@ -43,8 +43,8 @@ export function EventTicketTiers({
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tiers.map((tier, index) => {
-            const isSoldOut = tier.sold >= tier.capacity;
-            const remaining = tier.capacity - tier.sold;
+            const isSoldOut = tier.remaining === 0;
+            const remaining = tier.remaining;
 
             return (
               <motion.div
@@ -109,14 +109,14 @@ export function EventTicketTiers({
                       </div>
                     )}
 
-                    {isCompleted && (
+                    {isCompleted && isSoldOut && (
                       <div className="pt-2 border-t">
-                        <p className="text-sm text-muted-foreground">
-                          <span className="font-semibold text-foreground">
-                            {tier.sold.toLocaleString()}
-                          </span>{" "}
-                          tickets sold
-                        </p>
+                        <Badge
+                          variant="default"
+                          className="w-full justify-center"
+                        >
+                          Event Completed - Sold Out
+                        </Badge>
                       </div>
                     )}
                   </CardContent>

@@ -7,13 +7,12 @@ export interface Reservation {
 
 export interface TierValidation {
   tierIndex: number;
-  capacity: number;
+  remaining: number;
 }
 
 export interface TierAvailability {
-  sold: number;
+  remaining: number;
   reserved: number;
-  capacity: number;
 }
 
 /**
@@ -48,15 +47,15 @@ export function validateTiersAndCapacities(
     }
 
     const tier = ticketTiers[reservation.tierIndex];
-    if (reservation.quantity > tier.capacity) {
+    if (reservation.quantity > tier.remaining) {
       throw new Error(
-        `Requested quantity (${reservation.quantity}) exceeds tier capacity (${tier.capacity}) for tier ${reservation.tierIndex}`
+        `Requested quantity (${reservation.quantity}) exceeds tier remaining tickets (${tier.remaining}) for tier ${reservation.tierIndex}`
       );
     }
 
     tierValidations.push({
       tierIndex: reservation.tierIndex,
-      capacity: tier.capacity,
+      remaining: tier.remaining,
     });
   }
 
@@ -64,27 +63,26 @@ export function validateTiersAndCapacities(
 }
 
 /**
- * Calculate tier availability from sold tickets and existing reservations
+ * Calculate tier availability from remaining tickets and existing reservations
  */
 export function calculateTierAvailability(
   tierValidations: TierValidation[],
-  soldTicketsByTier: number[],
+  remainingTicketsByTier: number[],
   allReservations: Array<{ tierIndex: number; quantity: number }>
 ): Map<number, TierAvailability> {
   const tierAvailability = new Map<number, TierAvailability>();
 
   for (let i = 0; i < tierValidations.length; i++) {
     const validation = tierValidations[i];
-    const soldTickets = soldTicketsByTier[i];
+    const remainingTickets = remainingTicketsByTier[i];
 
     const reservedTickets = allReservations
       .filter((reservation) => reservation.tierIndex === validation.tierIndex)
       .reduce((sum, reservation) => sum + reservation.quantity, 0);
 
     tierAvailability.set(validation.tierIndex, {
-      sold: soldTickets,
+      remaining: remainingTickets,
       reserved: reservedTickets,
-      capacity: validation.capacity,
     });
   }
 
@@ -101,10 +99,7 @@ export function groupReservationsByTier(
 
   for (const reservation of reservations) {
     const current = requestedByTier.get(reservation.tierIndex) || 0;
-    requestedByTier.set(
-      reservation.tierIndex,
-      current + reservation.quantity
-    );
+    requestedByTier.set(reservation.tierIndex, current + reservation.quantity);
   }
 
   return requestedByTier;
@@ -123,8 +118,7 @@ export function validateAvailability(
       throw new Error(`Tier ${tierIndex} availability data not found`);
     }
 
-    const totalUsed = availability.sold + availability.reserved;
-    const available = availability.capacity - totalUsed;
+    const available = availability.remaining - availability.reserved;
 
     if (requestedQuantity > available) {
       throw new Error(
@@ -133,4 +127,3 @@ export function validateAvailability(
     }
   }
 }
-

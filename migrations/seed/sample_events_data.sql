@@ -55,22 +55,19 @@ INSERT INTO events (
         {
             "name": "Early Bird",
             "price": 15.00,
-            "capacity": 100,
-            "sold": 100,
+            "remaining": 0,
             "available_until": "2025-04-01T00:00:00Z"
         },
         {
             "name": "Tier 1",
             "price": 20.00,
-            "capacity": 150,
-            "sold": 150,
+            "remaining": 0,
             "available_until": "2025-05-01T00:00:00Z"
         },
         {
             "name": "Tier 2",
             "price": 25.00,
-            "capacity": 150,
-            "sold": 100,
+            "remaining": 50,
             "available_until": null
         }
     ]'::jsonb,
@@ -140,22 +137,19 @@ INSERT INTO events (
         {
             "name": "Early Bird",
             "price": 18.00,
-            "capacity": 100,
-            "sold": 100,
+            "remaining": 0,
             "available_until": "2024-07-15T00:00:00Z"
         },
         {
             "name": "Tier 1",
             "price": 22.00,
-            "capacity": 150,
-            "sold": 150,
+            "remaining": 0,
             "available_until": "2024-08-01T00:00:00Z"
         },
         {
             "name": "Tier 2",
             "price": 25.00,
-            "capacity": 150,
-            "sold": 150,
+            "remaining": 0,
             "available_until": null
         }
     ]'::jsonb,
@@ -225,15 +219,13 @@ INSERT INTO events (
         {
             "name": "Early Bird",
             "price": 15.00,
-            "capacity": 50,
-            "sold": 20,
+            "remaining": 30,
             "available_until": "2025-12-31T00:00:00Z"
         },
         {
             "name": "General Admission",
             "price": 20.00,
-            "capacity": 150,
-            "sold": 30,
+            "remaining": 120,
             "available_until": null
         }
     ]'::jsonb,

@@ -89,16 +89,13 @@ class EventService {
 
     if (!availability) {
       console.error("⚠️ [Service] Failed to fetch ticket availability");
-      // Fallback to zeros if availability fetch fails
+      // Fallback: use remaining from static data if availability fetch fails
       return {
         ...staticData,
         total_tickets_sold: 0,
         tickets_remaining: staticData.total_capacity || 0,
         is_sold_out: false,
-        ticket_tiers: staticData.ticket_tiers.map((tier) => ({
-          ...tier,
-          sold: 0,
-        })),
+        ticket_tiers: staticData.ticket_tiers, // Already has remaining
       };
     }
 
@@ -110,7 +107,7 @@ class EventService {
       is_sold_out: availability.is_sold_out,
       ticket_tiers: staticData.ticket_tiers.map((tier, index) => ({
         ...tier,
-        sold: availability.ticket_tiers_sold[index] || 0,
+        remaining: availability.ticket_tiers_remaining[index] ?? tier.remaining,
       })),
     };
 
@@ -160,16 +157,13 @@ class EventService {
 
     if (!availability) {
       console.error("⚠️ [Service] Failed to fetch ticket availability");
-      // Fallback to zeros if availability fetch fails
+      // Fallback: use remaining from static data if availability fetch fails
       return {
         ...staticData,
         total_tickets_sold: 0,
         tickets_remaining: staticData.total_capacity || 0,
         is_sold_out: false,
-        ticket_tiers: staticData.ticket_tiers.map((tier) => ({
-          ...tier,
-          sold: 0,
-        })),
+        ticket_tiers: staticData.ticket_tiers, // Already has remaining
       };
     }
 
@@ -181,7 +175,7 @@ class EventService {
       is_sold_out: availability.is_sold_out,
       ticket_tiers: staticData.ticket_tiers.map((tier, index) => ({
         ...tier,
-        sold: availability.ticket_tiers_sold[index] || 0,
+        remaining: availability.ticket_tiers_remaining[index] ?? tier.remaining,
       })),
     };
 

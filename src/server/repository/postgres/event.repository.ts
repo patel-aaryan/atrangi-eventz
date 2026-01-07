@@ -144,7 +144,9 @@ export class EventRepository {
       total_tickets_sold: row.total_tickets_sold || 0,
       tickets_remaining: row.tickets_remaining || 0,
       is_sold_out: row.is_sold_out || false,
-      ticket_tiers_sold: ticketTiers.map((tier: any) => tier.sold || 0),
+      ticket_tiers_remaining: ticketTiers.map(
+        (tier: any) => tier.remaining || 0
+      ),
     };
   }
 
@@ -212,11 +214,11 @@ export class EventRepository {
         row.ticket_sales_open?.toISOString() || row.ticket_sales_open,
       ticket_sales_close:
         row.ticket_sales_close?.toISOString() || row.ticket_sales_close,
-      // Map ticket tiers without sold counts
+      // Map ticket tiers without dynamic remaining counts
       ticket_tiers: ticketTiers.map((tier: any) => ({
         name: tier.name,
         price: tier.price,
-        capacity: tier.capacity,
+        remaining: tier.remaining,
         available_until: tier.available_until,
         description: tier.description,
         features: tier.features,
@@ -292,11 +294,11 @@ export class EventRepository {
         row.ticket_sales_open?.toISOString() || row.ticket_sales_open,
       ticket_sales_close:
         row.ticket_sales_close?.toISOString() || row.ticket_sales_close,
-      // Map ticket tiers without sold counts
+      // Map ticket tiers without dynamic remaining counts
       ticket_tiers: ticketTiers.map((tier: any) => ({
         name: tier.name,
         price: tier.price,
-        capacity: tier.capacity,
+        remaining: tier.remaining,
         available_until: tier.available_until,
         description: tier.description,
         features: tier.features,
