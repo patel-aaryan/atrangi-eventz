@@ -275,7 +275,7 @@ SELECT
     start_date,
     total_capacity,
     total_tickets_sold,
-    tickets_remaining,
+    GREATEST(0, total_capacity - total_tickets_sold) as tickets_remaining,
     is_sold_out,
     status
 FROM events

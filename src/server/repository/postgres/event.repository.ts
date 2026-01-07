@@ -59,7 +59,7 @@ export class EventRepository {
         venue_city,
         total_capacity,
         total_tickets_sold,
-        tickets_remaining,
+        GREATEST(0, total_capacity - total_tickets_sold) as tickets_remaining,
         is_sold_out,
         ticket_sales_open,
         ticket_sales_close,
@@ -127,8 +127,9 @@ export class EventRepository {
   ): Promise<TicketAvailability | null> {
     const query = `
       SELECT 
+        total_capacity,
         total_tickets_sold,
-        tickets_remaining,
+        GREATEST(0, total_capacity - total_tickets_sold) as tickets_remaining,
         is_sold_out,
         ticket_tiers
       FROM events
