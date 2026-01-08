@@ -1,4 +1,4 @@
-# Atrangi Eventz
+# Atrangi Eventz Website
 
 A modern event management platform for organizing and selling tickets to cultural events, including Bollywood parties, Garba nights, and cultural festivals.
 
