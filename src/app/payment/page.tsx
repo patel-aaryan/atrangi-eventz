@@ -143,9 +143,7 @@ export default function PaymentPage() {
       }
 
       // Prevent duplicate PaymentIntent creation using ref (survives Strict Mode)
-      if (paymentIntentCreatedRef.current) {
-        return;
-      }
+      if (paymentIntentCreatedRef.current) return;
 
       const amountInCents = Math.round(total * 100);
 
