@@ -30,9 +30,8 @@ export function EventsHeader({
         variants={fadeInUp}
         className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto"
       >
-        Experience the best of Gujarati culture through our exciting events.
-        From high-energy Bollywood club nights to traditional Garba
-        celebrations, there&apos;s something for everyone.
+        Explore our past events and relive the memories of the amazing events
+        we&apos;ve hosted.
       </motion.p>
     </motion.div>
   );

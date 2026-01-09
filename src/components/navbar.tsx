@@ -35,8 +35,8 @@ const navItems = [
         icon: Calendar,
       },
       {
-        name: "Upcoming Events",
-        href: "/upcoming-events",
+        name: "Upcoming Event",
+        href: "/upcoming-event",
         description: "Check out what's coming next",
         icon: CalendarCheck,
       },

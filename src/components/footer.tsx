@@ -25,8 +25,6 @@ export function Footer() {
     "idle" | "success" | "error"
   >("idle");
 
-  const email = process.env.NEXT_PUBLIC_EMAIL;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -137,12 +135,12 @@ export function Footer() {
                   </Link>
                 ))}
                 <a
-                  href="mailto:contact@atrangieventz.com"
+                  href={`mailto:${siteConfig.email}`}
                   className="flex items-center gap-2 px-4 py-3 rounded-full bg-background border border-border transition-all hover:scale-105 text-sm text-muted-foreground hover:text-primary"
                   aria-label="Email"
                 >
                   <Mail className="w-5 h-5" />
-                  <span>{email}</span>
+                  <span>{siteConfig.email}</span>
                 </a>
               </div>
             </div>

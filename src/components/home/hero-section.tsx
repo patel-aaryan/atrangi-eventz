@@ -4,6 +4,8 @@ import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
+import { FaInstagram, FaYoutube, FaTiktok } from "react-icons/fa";
+import { siteConfig } from "@/lib/metadata";
 
 interface HeroSectionProps {
   fadeInUp: Variants;
@@ -70,7 +72,7 @@ export function HeroSection({
               </span>
             </h1>
             <p className="text-xl sm:text-2xl md:text-3xl text-muted-foreground font-medium">
-              Student Organization
+              Gujarati Student Organization
             </p>
           </motion.div>
 
@@ -78,15 +80,12 @@ export function HeroSection({
             variants={fadeInUp}
             className="text-lg sm:text-xl md:text-2xl text-foreground/80 max-w-3xl mx-auto leading-relaxed"
           >
-            Uniting Gujarati Students of Ontario with exciting{" "}
+            Uniting{" "}
             <span className="text-primary font-semibold">
-              Bollywood club parties
-            </span>
-            ,{" "}
-            <span className="text-pink-500 font-semibold">
-              vibrant garba events
-            </span>
-            {", "}and much more!
+              Students of Ontario
+            </span>{" "}
+            with exciting{" "}
+            <span className="text-pink-500 font-semibold">cultural events</span>
           </motion.p>
 
           <motion.div
@@ -108,6 +107,51 @@ export function HeroSection({
             >
               <Link href="#about">Learn More</Link>
             </Button>
+          </motion.div>
+
+          <motion.div
+            variants={fadeInUp}
+            className="flex gap-6 justify-center items-center pt-8"
+          >
+            <motion.div
+              whileHover={{ scale: 1.2, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <Link
+                href={siteConfig.links.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground/60 hover:text-pink-500 transition-colors"
+              >
+                <FaInstagram className="w-6 h-6" />
+              </Link>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.2, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <Link
+                href={siteConfig.links.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground/60 hover:text-red-600 transition-colors"
+              >
+                <FaYoutube className="w-6 h-6" />
+              </Link>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.2, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <Link
+                href={siteConfig.links.tiktok}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground/60 hover:text-black dark:hover:text-white transition-colors"
+              >
+                <FaTiktok className="w-6 h-6" />
+              </Link>
+            </motion.div>
           </motion.div>
         </motion.div>
       </div>

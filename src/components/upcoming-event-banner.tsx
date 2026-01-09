@@ -2,30 +2,31 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import {
-  X,
-  Ticket,
-  MapPin,
-  Calendar,
-  Clock,
-  Sparkles,
-  Users,
-} from "lucide-react";
+import { X, Ticket, Clock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getUpcomingEvent } from "@/lib/api/events";
-import { useTicket } from "@/contexts/ticket-context";
+
+const STORAGE_KEY = "upcoming-event-banner-dismissed";
 
 export function UpcomingEventBanner() {
   const pathname = usePathname();
   const [isDismissed, setIsDismissed] = useState(false);
   const [timeUntil, setTimeUntil] = useState("");
-  const { openDrawer } = useTicket();
 
   // Routes where the banner should not be shown
   const hiddenRoutes = new Set(["/payment", "/checkout", "/confirmation"]);
+
+  // Check if banner was dismissed in this session
+  useEffect(() => {
+    const wasDismissed = sessionStorage.getItem(STORAGE_KEY);
+    if (wasDismissed === "true") {
+      setIsDismissed(true);
+    }
+  }, []);
 
   // Use React Query for caching
   const { data: event, isLoading } = useQuery({
@@ -70,19 +71,9 @@ export function UpcomingEventBanner() {
     return () => clearInterval(interval);
   }, [event]);
 
-  const handleDismiss = () => setIsDismissed(true);
-
-  const handleGetTickets = () => {
-    if (!event) return;
-
-    // Check if there are any tickets available
-    if (!event.ticket_tiers || event.ticket_tiers.length === 0) {
-      console.error("No tickets available for this event");
-      return;
-    }
-
-    // Simply open the drawer with the event - context handles the rest
-    openDrawer(event);
+  const handleDismiss = () => {
+    setIsDismissed(true);
+    sessionStorage.setItem(STORAGE_KEY, "true");
   };
 
   // Don't render if loading, no event, dismissed, or on hidden routes
@@ -90,27 +81,8 @@ export function UpcomingEventBanner() {
     return null;
   }
 
-  // Format date
-  const eventDate = new Date(event.start_date);
-  const formattedDate = eventDate.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-
-  const formattedTime = eventDate.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-
   // Calculate ticket availability
   const ticketsRemaining = event.tickets_remaining;
-  const totalCapacity = event.total_capacity || 0;
-  const percentageLeft = totalCapacity
-    ? (ticketsRemaining / totalCapacity) * 100
-    : 0;
 
   // Determine ticket status
   let ticketBadge = null;
@@ -123,13 +95,14 @@ export function UpcomingEventBanner() {
         Sold Out
       </Badge>
     );
-  } else if (percentageLeft < 20 && percentageLeft > 0) {
+  } else if (ticketsRemaining < 25 && ticketsRemaining > 0) {
     ticketBadge = (
       <Badge
         variant="secondary"
         className="bg-yellow-500/20 text-yellow-200 border-yellow-400"
       >
-        Limited Tickets
+        {ticketsRemaining} {ticketsRemaining === 1 ? "ticket" : "tickets"}{" "}
+        remaining
       </Badge>
     );
   } else if (!event.is_sold_out) {
@@ -142,12 +115,6 @@ export function UpcomingEventBanner() {
       </Badge>
     );
   }
-
-  // Truncate description for banner
-  const truncateText = (text: string | null, maxLength: number) => {
-    if (!text) return "";
-    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
-  };
 
   return (
     <AnimatePresence>
@@ -218,70 +185,6 @@ export function UpcomingEventBanner() {
                       </Badge>
                     )}
                   </div>
-
-                  {/* Description */}
-                  {event.description && (
-                    <p className="text-sm text-white/90 leading-relaxed lg:text-base">
-                      {truncateText(event.description, 150)}
-                    </p>
-                  )}
-
-                  {/* Info Grid - 2x2 on mobile */}
-                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                    {/* Date */}
-                    <div className="flex items-start gap-2 text-sm text-white/90">
-                      <Calendar className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-medium text-white/70">
-                          Date
-                        </span>
-                        <span className="font-medium text-white text-xs lg:text-sm truncate">
-                          {formattedDate}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Time */}
-                    <div className="flex items-start gap-2 text-sm text-white/90">
-                      <Clock className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-medium text-white/70">
-                          Time
-                        </span>
-                        <span className="font-medium text-white text-xs lg:text-sm">
-                          {formattedTime}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Location */}
-                    <div className="flex items-start gap-2 text-sm text-white/90">
-                      <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-medium text-white/70">
-                          Location
-                        </span>
-                        <span className="font-medium text-white text-xs lg:text-sm truncate">
-                          {event.venue_name || event.venue_city}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Tickets */}
-                    {!event.is_sold_out && (
-                      <div className="flex items-start gap-2 text-sm text-white/90">
-                        <Users className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-xs font-medium text-white/70">
-                            Tickets Left
-                          </span>
-                          <span className="font-medium text-white text-xs lg:text-sm">
-                            {ticketsRemaining} / {totalCapacity}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
 
@@ -289,17 +192,28 @@ export function UpcomingEventBanner() {
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="lg:flex-none"
+                className="lg:flex-none mx-4"
               >
-                <Button
-                  onClick={handleGetTickets}
-                  size="lg"
-                  disabled={event.is_sold_out}
-                  className="w-full bg-white font-semibold text-purple-600 shadow-lg hover:bg-white/90 hover:shadow-xl lg:min-w-[140px] disabled:opacity-50"
-                >
-                  <Ticket className="h-5 w-5" />
-                  <span>{event.is_sold_out ? "Sold Out" : "Get Tickets"}</span>
-                </Button>
+                {event.is_sold_out ? (
+                  <Button
+                    size="lg"
+                    disabled
+                    className="w-full bg-white font-semibold text-purple-600 shadow-lg hover:bg-white/90 hover:shadow-xl lg:min-w-[140px] disabled:opacity-50"
+                  >
+                    <Ticket className="h-5 w-5" />
+                    <span>Sold Out</span>
+                  </Button>
+                ) : (
+                  <Link href="/upcoming-events">
+                    <Button
+                      size="lg"
+                      className="w-full bg-white font-semibold text-purple-600 shadow-lg hover:bg-white/90 hover:shadow-xl lg:min-w-[140px]"
+                    >
+                      <Ticket className="h-5 w-5" />
+                      <span>Get Tickets</span>
+                    </Button>
+                  </Link>
+                )}
               </motion.div>
             </div>
           </div>

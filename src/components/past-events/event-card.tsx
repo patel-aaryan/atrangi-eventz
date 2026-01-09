@@ -5,6 +5,7 @@ import { Calendar, MapPin, Users, Clock, Award, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import type { PastEventListItem } from "@/types/event";
+import { formatDuration } from "@/lib/utils/date";
 
 interface EventCardProps {
   event: PastEventListItem;
@@ -12,17 +13,14 @@ interface EventCardProps {
 
 export function EventCard({ event }: Readonly<EventCardProps>) {
   const startDate = new Date(event.start_date);
+  const endDate = new Date(event.end_date);
   const formattedDate = startDate.toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
 
-  const formattedTime = startDate.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+  const duration = formatDuration(startDate, endDate);
 
   const location = event.venue_name || event.venue_city || "TBA";
   const attendees = event.total_tickets_sold
@@ -120,9 +118,11 @@ export function EventCard({ event }: Readonly<EventCardProps>) {
                     <Clock className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs text-muted-foreground">Time</span>
+                    <span className="text-xs text-muted-foreground">
+                      Duration
+                    </span>
                     <span className="font-medium text-foreground">
-                      {formattedTime}
+                      {duration}
                     </span>
                   </div>
                 </div>
