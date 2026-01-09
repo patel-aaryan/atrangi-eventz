@@ -21,6 +21,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Menu, Calendar, CalendarCheck } from "lucide-react";
+import { ShoppingCartDropdown } from "@/components/navbar/shopping-cart-dropdown";
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -82,7 +83,7 @@ export function Navbar() {
 function DesktopNav() {
   return (
     <>
-      <NavigationMenu>
+      <NavigationMenu delayDuration={0}>
         <NavigationMenuList>
           {navItems.map((item, index) => (
             <motion.div
@@ -94,7 +95,9 @@ function DesktopNav() {
               <NavigationMenuItem>
                 {"dropdown" in item && item.dropdown ? (
                   <>
-                    <NavigationMenuTrigger>{item.name}</NavigationMenuTrigger>
+                    <NavigationMenuTrigger onClick={(e) => e.preventDefault()}>
+                      {item.name}
+                    </NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <ul className="grid w-[280px] gap-2 p-3">
                         {item.dropdown.map((dropdownItem) => {
@@ -147,12 +150,7 @@ function DesktopNav() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.5 }}
       >
-        <Button
-          asChild
-          className="bg-gradient-to-r from-primary to-pink-500 hover:opacity-90"
-        >
-          <Link href="/tickets">Get Tickets</Link>
-        </Button>
+        <ShoppingCartDropdown />
       </motion.div>
     </>
   );
@@ -230,14 +228,9 @@ function MobileNav() {
               </Link>
             )
           )}
-          <Button
-            asChild
-            className="w-full bg-gradient-to-r from-primary to-pink-500 hover:opacity-90 mt-4"
-          >
-            <Link href="/tickets" onClick={() => setIsOpen(false)}>
-              Get Tickets
-            </Link>
-          </Button>
+          <div className="mt-4">
+            <ShoppingCartDropdown />
+          </div>
         </div>
       </SheetContent>
     </Sheet>

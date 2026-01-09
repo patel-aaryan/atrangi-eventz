@@ -8,7 +8,7 @@ import Link from "next/link";
 import { siteConfig } from "@/lib/metadata";
 
 interface CTASectionProps {
-  fadeInUp: Variants;
+  readonly fadeInUp: Variants;
 }
 
 export function CTASection({ fadeInUp }: CTASectionProps) {

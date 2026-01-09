@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   Calendar,
   Clock,
@@ -9,7 +10,9 @@ import {
   Award,
   Heart,
   Tag,
+  ArrowLeft,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { EventDetail } from "@/types/event";
 
@@ -51,9 +54,6 @@ export function EventHero({ event, bannerUrl }: Readonly<EventHeroProps>) {
     .filter(Boolean)
     .join(", ");
 
-  const isCompleted = event.status === "completed";
-  const isCancelled = event.status === "cancelled";
-
   return (
     <section className="relative min-h-[60vh] flex items-end overflow-hidden">
       {/* Background Image */}
@@ -78,21 +78,24 @@ export function EventHero({ event, bannerUrl }: Readonly<EventHeroProps>) {
           transition={{ duration: 0.6 }}
           className="space-y-6"
         >
-          {/* Status Badge */}
-          {(isCompleted || isCancelled) && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
+          {/* Back Button */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="gap-2 hover:bg-card/80 backdrop-blur-sm"
             >
-              <Badge
-                variant={isCancelled ? "destructive" : "secondary"}
-                className="text-sm px-3 py-1"
-              >
-                {isCancelled ? "Cancelled" : "Past Event"}
-              </Badge>
-            </motion.div>
-          )}
+              <Link href="/past-events">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Past Events
+              </Link>
+            </Button>
+          </motion.div>
 
           {/* Title */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">

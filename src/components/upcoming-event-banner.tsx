@@ -9,24 +9,17 @@ import { X, Ticket, Clock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getUpcomingEvent } from "@/lib/api/events";
-
-const STORAGE_KEY = "upcoming-event-banner-dismissed";
+import { useSessionStorage } from "@/hooks/use-session-storage";
 
 export function UpcomingEventBanner() {
   const pathname = usePathname();
-  const [isDismissed, setIsDismissed] = useState(false);
+  const [isDismissed, setIsDismissed] = useSessionStorage(
+    "upcoming-event-banner-dismissed"
+  );
   const [timeUntil, setTimeUntil] = useState("");
 
   // Routes where the banner should not be shown
   const hiddenRoutes = new Set(["/payment", "/checkout", "/confirmation"]);
-
-  // Check if banner was dismissed in this session
-  useEffect(() => {
-    const wasDismissed = sessionStorage.getItem(STORAGE_KEY);
-    if (wasDismissed === "true") {
-      setIsDismissed(true);
-    }
-  }, []);
 
   // Use React Query for caching
   const { data: event, isLoading } = useQuery({
@@ -71,10 +64,7 @@ export function UpcomingEventBanner() {
     return () => clearInterval(interval);
   }, [event]);
 
-  const handleDismiss = () => {
-    setIsDismissed(true);
-    sessionStorage.setItem(STORAGE_KEY, "true");
-  };
+  const handleDismiss = () => setIsDismissed(true);
 
   // Don't render if loading, no event, dismissed, or on hidden routes
   if (isLoading || !event || isDismissed || hiddenRoutes.has(pathname)) {
