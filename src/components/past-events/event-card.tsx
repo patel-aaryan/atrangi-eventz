@@ -36,7 +36,7 @@ export function EventCard({ event }: Readonly<EventCardProps>) {
     : "0";
 
   return (
-    <Link href={`/events/${event.slug}`} className="block h-full">
+    <Link href={`/past-events/${event.slug}`} className="block h-full">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

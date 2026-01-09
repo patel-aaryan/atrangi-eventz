@@ -70,7 +70,7 @@ export default function PaymentPage() {
       dispatch(clearPaymentIntent());
       dispatch(clearReservation());
       setTimeout(() => {
-        router.push("/events");
+        router.push("/upcoming-events");
       }, 3000);
     },
     enabled: !!storedReservation?.createdAt,
@@ -216,7 +216,7 @@ export default function PaymentPage() {
   // Redirect if no event or tickets selected (only after loading completes)
   useEffect(() => {
     if (!isLoading && (!currentEvent || tickets.length === 0)) {
-      router.push("/events");
+      router.push("/upcoming-events");
     }
   }, [isLoading, currentEvent, tickets.length, router]);
 

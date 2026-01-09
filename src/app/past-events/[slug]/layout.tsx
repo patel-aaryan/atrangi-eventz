@@ -21,7 +21,7 @@ export async function generateMetadata({
       return generatePageMetadata({
         title: "Event Not Found",
         description: "The requested event could not be found.",
-        path: `/events/${slug}`,
+        path: `/past-events/${slug}`,
       });
     }
 
@@ -44,7 +44,7 @@ export async function generateMetadata({
     return generatePageMetadata({
       title,
       description,
-      path: `/events/${slug}`,
+      path: `/past-events/${slug}`,
       keywords,
     });
   } catch (error) {

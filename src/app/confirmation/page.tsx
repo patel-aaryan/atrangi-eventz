@@ -50,7 +50,7 @@ function ConfirmationContent() {
   // If user lands here without an event or tickets, send them back to events
   useEffect(() => {
     if (!currentEvent || ticketSelections.length === 0) {
-      router.push("/events");
+      router.push("/upcoming-events");
     }
   }, [currentEvent, ticketSelections.length, router]);
 
@@ -182,7 +182,7 @@ function ConfirmationContent() {
         .share({
           title: confirmationOrder.eventName,
           text: `I'm attending ${confirmationOrder.eventName}!`,
-          url: window.location.origin + "/events",
+          url: window.location.origin + "/upcoming-events",
         })
         .catch(console.error);
     }
@@ -263,7 +263,7 @@ function ConfirmationContent() {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => router.push("/events")}
+              onClick={() => router.push("/upcoming-events")}
               className="flex-1"
             >
               <Home className="w-5 h-5 mr-2" />

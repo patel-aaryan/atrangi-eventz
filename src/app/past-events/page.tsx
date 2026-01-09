@@ -1,6 +1,6 @@
 "use client";
 
-import { EventsHeader, PastEventsList } from "@/components/events";
+import { EventsHeader, PastEventsList } from "@/components/past-events";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },

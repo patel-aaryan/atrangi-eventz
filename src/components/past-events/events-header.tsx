@@ -21,7 +21,7 @@ export function EventsHeader({
       <motion.div variants={fadeInUp}>
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight">
           <span className="block bg-gradient-to-r from-primary via-pink-500 to-purple-500 bg-clip-text text-transparent">
-            Our Events
+            Past Events
           </span>
         </h1>
       </motion.div>

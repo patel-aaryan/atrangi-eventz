@@ -3,8 +3,8 @@ import { generatePageMetadata } from "@/lib/metadata";
 export const metadata = generatePageMetadata({
   title: "Events",
   description:
-    "Explore upcoming Bollywood club parties, Garba nights, and cultural events organized by Atrangi Eventz for Gujarati students across Ontario. Join us for unforgettable experiences.",
-  path: "/events",
+    "Explore past events organized by Atrangi Eventz for Gujarati students across Ontario. Join us for unforgettable experiences.",
+  path: "/past-events",
   keywords: [
     "gujarati events ontario",
     "bollywood parties ontario",

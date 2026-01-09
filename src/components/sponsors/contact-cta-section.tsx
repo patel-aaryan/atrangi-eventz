@@ -34,7 +34,7 @@ export function ContactCTASection({ fadeInUp }: ContactCTASectionProps) {
           <Link href="/#contact">Contact Us</Link>
         </Button>
         <Button asChild size="lg" variant="outline">
-          <Link href="/events">View Our Events</Link>
+          <Link href="/past-events">View Our Events</Link>
         </Button>
       </div>
     </motion.div>

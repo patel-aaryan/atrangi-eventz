@@ -8,7 +8,7 @@ import {
   useCallback,
   ReactNode,
 } from "react";
-import { TicketSelectionDrawer } from "@/components/events/ticket-selection-drawer";
+import { TicketSelectionDrawer } from "@/components/past-events/ticket-selection-drawer";
 import type { UpcomingEventItem } from "@/types/event";
 import { useTicketReservations } from "@/hooks/use-ticket-reservations";
 import { useTicketManagement } from "@/hooks/use-ticket-management";

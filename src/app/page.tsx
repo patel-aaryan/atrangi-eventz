@@ -1,9 +1,4 @@
-import {
-  HeroSection,
-  AboutSection,
-  EventsSection,
-  CTASection,
-} from "@/components/home";
+import { HeroSection, AboutSection, CTASection } from "@/components/home";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -20,7 +15,6 @@ export default function Home() {
     <>
       <HeroSection fadeInUp={fadeInUp} staggerContainer={staggerContainer} />
       <AboutSection fadeInUp={fadeInUp} staggerContainer={staggerContainer} />
-      <EventsSection fadeInUp={fadeInUp} staggerContainer={staggerContainer} />
       <CTASection fadeInUp={fadeInUp} />
     </>
   );

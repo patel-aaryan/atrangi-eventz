@@ -31,7 +31,7 @@ import { useReservationTimer } from "@/hooks/use-reservation-timer";
 import { ReservationTimer } from "@/components/reservation-timer";
 import { ReservationExpired } from "@/components/reservation-expired";
 
-const RESERVATION_DURATION = 20 * 60 * 1000; // 20 minutes in milliseconds
+const RESERVATION_DURATION = 10 * 60 * 1000; // 20 minutes in milliseconds
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -51,7 +51,7 @@ export default function CheckoutPage() {
       dispatch(clearReservation());
       // Redirect handled by ReservationExpired component or after delay
       setTimeout(() => {
-        router.push("/events");
+        router.push("/upcoming-events");
       }, 3000);
     },
     enabled: !!storedReservation?.createdAt,

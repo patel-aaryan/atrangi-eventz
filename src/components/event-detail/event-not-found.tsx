@@ -30,7 +30,7 @@ export function EventNotFound({
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
           <Button asChild>
-            <Link href="/events">Browse Events</Link>
+            <Link href="/past-events">Browse Events</Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href="/">Go Home</Link>

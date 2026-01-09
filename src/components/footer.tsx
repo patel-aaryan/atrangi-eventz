@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FaInstagram, FaYoutube, FaTiktok } from "react-icons/fa";
-import { Mail, Send, MapPin } from "lucide-react";
+import { Mail, Send } from "lucide-react";
 import { siteConfig } from "@/lib/metadata";
 import { usePathname } from "next/navigation";
 
@@ -54,23 +54,34 @@ export function Footer() {
     });
   };
 
+  const quickLinks = [
+    { name: "Home", href: "/" },
+    { name: "About Us", href: "/#about" },
+    { name: "Upcoming Events", href: "/upcoming-events" },
+    { name: "Past Events", href: "/past-events" },
+    { name: "Sponsors", href: "/sponsors" },
+  ];
+
   const socialLinks = [
     {
       name: "Instagram",
       icon: FaInstagram,
       href: siteConfig.links.instagram,
+      handle: "@atrangieventz",
       color: "hover:text-pink-500",
     },
     {
       name: "YouTube",
       icon: FaYoutube,
       href: siteConfig.links.youtube,
+      handle: "@atrangieventz",
       color: "hover:text-red-600",
     },
     {
       name: "TikTok",
       icon: FaTiktok,
       href: siteConfig.links.tiktok,
+      handle: "@atrangieventz",
       color: "hover:text-foreground",
     },
   ];
@@ -93,74 +104,46 @@ export function Footer() {
                 experiences, exciting events, and lasting connections.
               </p>
 
-              {/* Social Links */}
-              <div className="flex gap-4">
+              {/* Quick Links */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+                <ul className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                  {quickLinks.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.href}
+                        className="hover:text-foreground transition-colors"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Social Links & Contact */}
+              <div className="grid grid-cols-2 gap-4">
                 {socialLinks.map((social) => (
                   <Link
                     key={social.name}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`p-3 rounded-full bg-background border border-border ${social.color} transition-all hover:scale-110`}
+                    className={`flex items-center gap-2 px-4 py-3 rounded-full bg-background border border-border ${social.color} transition-all hover:scale-105 text-sm text-muted-foreground hover:text-foreground`}
                     aria-label={social.name}
                   >
                     <social.icon className="w-5 h-5" />
+                    <span>{social.handle}</span>
                   </Link>
                 ))}
-              </div>
-            </div>
-
-            {/* Quick Links & Contact Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              {/* Quick Links */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>
-                    <Link
-                      href="/"
-                      className="hover:text-foreground transition-colors"
-                    >
-                      Home
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/events"
-                      className="hover:text-foreground transition-colors"
-                    >
-                      Events
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/sponsors"
-                      className="hover:text-foreground transition-colors"
-                    >
-                      Sponsors
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Contact Info */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
-                <div className="space-y-3 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-primary" />
-                    <span>Ontario, Canada</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-primary" />
-                    <a
-                      href="mailto:contact@atrangieventz.com"
-                      className="hover:text-foreground transition-colors"
-                    >
-                      {email}
-                    </a>
-                  </div>
-                </div>
+                <a
+                  href="mailto:contact@atrangieventz.com"
+                  className="flex items-center gap-2 px-4 py-3 rounded-full bg-background border border-border transition-all hover:scale-105 text-sm text-muted-foreground hover:text-primary"
+                  aria-label="Email"
+                >
+                  <Mail className="w-5 h-5" />
+                  <span>{email}</span>
+                </a>
               </div>
             </div>
           </div>
@@ -234,15 +217,6 @@ export function Footer() {
                 )}
               </Button>
             </form>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-border">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>
-              © {new Date().getFullYear()} Atrangi Eventz. All rights reserved.
-            </p>
           </div>
         </div>
       </div>

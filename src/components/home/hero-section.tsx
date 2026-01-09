@@ -3,9 +3,7 @@
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
-import { FaInstagram, FaYoutube } from "react-icons/fa";
 import Link from "next/link";
-import { siteConfig } from "@/lib/metadata";
 
 interface HeroSectionProps {
   fadeInUp: Variants;
@@ -111,46 +109,8 @@ export function HeroSection({
               <Link href="#about">Learn More</Link>
             </Button>
           </motion.div>
-
-          <motion.div
-            variants={fadeInUp}
-            className="flex gap-6 justify-center items-center pt-8"
-          >
-            <Link
-              href={siteConfig.links.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground/60 hover:text-foreground transition-colors"
-            >
-              <FaInstagram className="w-6 h-6" />
-            </Link>
-            <Link
-              href={siteConfig.links.youtube}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground/60 hover:text-foreground transition-colors"
-            >
-              <FaYoutube className="w-6 h-6" />
-            </Link>
-          </motion.div>
         </motion.div>
       </div>
-
-      {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-6 h-10 border-2 border-foreground/20 rounded-full flex justify-center pt-2"
-        >
-          <motion.div className="w-1.5 h-1.5 bg-foreground/40 rounded-full" />
-        </motion.div>
-      </motion.div>
     </section>
   );
 }

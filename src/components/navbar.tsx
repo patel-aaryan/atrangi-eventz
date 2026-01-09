@@ -9,6 +9,8 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
+  NavigationMenuTrigger,
+  NavigationMenuContent,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import {
@@ -18,12 +20,28 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, Calendar, CalendarCheck } from "lucide-react";
 
 const navItems = [
   { name: "Home", href: "/" },
   { name: "About Us", href: "/#about" },
-  { name: "Events", href: "/events" },
+  {
+    name: "Events",
+    dropdown: [
+      {
+        name: "Past Events",
+        href: "/past-events",
+        description: "Relive our amazing past events",
+        icon: Calendar,
+      },
+      {
+        name: "Upcoming Events",
+        href: "/upcoming-events",
+        description: "Check out what's coming next",
+        icon: CalendarCheck,
+      },
+    ],
+  },
   { name: "Sponsors", href: "/sponsors" },
 ];
 
@@ -74,12 +92,51 @@ function DesktopNav() {
               transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
             >
               <NavigationMenuItem>
-                <NavigationMenuLink
-                  className={navigationMenuTriggerStyle()}
-                  asChild
-                >
-                  <Link href={item.href}>{item.name}</Link>
-                </NavigationMenuLink>
+                {"dropdown" in item && item.dropdown ? (
+                  <>
+                    <NavigationMenuTrigger>{item.name}</NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[280px] gap-2 p-3">
+                        {item.dropdown.map((dropdownItem) => {
+                          const Icon = dropdownItem.icon;
+                          return (
+                            <li key={dropdownItem.name}>
+                              <NavigationMenuLink asChild>
+                                <Link
+                                  href={dropdownItem.href}
+                                  className="block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none transition-all hover:bg-gradient-to-r hover:from-primary/10 hover:to-pink-500/10 hover:shadow-md focus:bg-gradient-to-r focus:from-primary/10 focus:to-pink-500/10 border border-transparent hover:border-primary/20 group"
+                                >
+                                  <div className="flex items-center gap-2.5">
+                                    {Icon && (
+                                      <div className="p-1.5 rounded-md bg-gradient-to-br from-primary/20 to-pink-500/20 group-hover:from-primary/30 group-hover:to-pink-500/30 transition-all">
+                                        <Icon className="h-4 w-4 text-primary" />
+                                      </div>
+                                    )}
+                                    <div>
+                                      <div className="text-sm font-semibold leading-none mb-1 group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-pink-500 group-hover:bg-clip-text group-hover:text-transparent transition-all">
+                                        {dropdownItem.name}
+                                      </div>
+                                      <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                                        {dropdownItem.description}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </Link>
+                              </NavigationMenuLink>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </NavigationMenuContent>
+                  </>
+                ) : (
+                  <NavigationMenuLink
+                    className={navigationMenuTriggerStyle()}
+                    asChild
+                  >
+                    <Link href={item.href}>{item.name}</Link>
+                  </NavigationMenuLink>
+                )}
               </NavigationMenuItem>
             </motion.div>
           ))}
@@ -120,21 +177,59 @@ function MobileNav() {
           </SheetTitle>
         </SheetHeader>
         <div className="flex flex-col gap-4 mt-8">
-          {navItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={() => setIsOpen(false)}
-              className="text-foreground/80 hover:text-foreground transition-colors font-medium"
-            >
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-base"
+          {navItems.map((item) =>
+            "dropdown" in item && item.dropdown ? (
+              <div key={item.name} className="flex flex-col gap-2">
+                <span className="text-sm font-semibold text-muted-foreground px-4">
+                  {item.name}
+                </span>
+                {item.dropdown.map((dropdownItem) => {
+                  const Icon = dropdownItem.icon;
+                  return (
+                    <Link
+                      key={dropdownItem.name}
+                      href={dropdownItem.href}
+                      onClick={() => setIsOpen(false)}
+                      className="text-foreground/80 hover:text-foreground transition-colors font-medium"
+                    >
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-base pl-6 gap-3"
+                      >
+                        {Icon && (
+                          <div className="p-1.5 rounded-md bg-gradient-to-br from-primary/20 to-pink-500/20">
+                            <Icon className="h-4 w-4 text-primary" />
+                          </div>
+                        )}
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">
+                            {dropdownItem.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {dropdownItem.description}
+                          </span>
+                        </div>
+                      </Button>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                className="text-foreground/80 hover:text-foreground transition-colors font-medium"
               >
-                {item.name}
-              </Button>
-            </Link>
-          ))}
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-base"
+                >
+                  {item.name}
+                </Button>
+              </Link>
+            )
+          )}
           <Button
             asChild
             className="w-full bg-gradient-to-r from-primary to-pink-500 hover:opacity-90 mt-4"
