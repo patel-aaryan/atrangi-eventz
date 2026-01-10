@@ -19,7 +19,12 @@ export function UpcomingEventBanner() {
   const [timeUntil, setTimeUntil] = useState("");
 
   // Routes where the banner should not be shown
-  const hiddenRoutes = new Set(["/payment", "/checkout", "/confirmation"]);
+  const hiddenRoutes = new Set([
+    "/payment",
+    "/checkout",
+    "/confirmation",
+    "/upcoming-event",
+  ]);
 
   // Use React Query for caching
   const { data: event, isLoading } = useQuery({
@@ -194,7 +199,7 @@ export function UpcomingEventBanner() {
                     <span>Sold Out</span>
                   </Button>
                 ) : (
-                  <Link href="/upcoming-events">
+                  <Link href="/upcoming-event">
                     <Button
                       size="lg"
                       className="w-full bg-white font-semibold text-purple-600 shadow-lg hover:bg-white/90 hover:shadow-xl lg:min-w-[140px]"
