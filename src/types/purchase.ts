@@ -11,7 +11,6 @@ export interface CompletePurchaseData {
     ticketId: string;
     firstName: string;
     lastName: string;
-    email: string;
   }>;
   contactInfo: {
     firstName: string;
@@ -44,8 +43,5 @@ export interface CompletePurchaseResult {
     id: string;
     ticketCode: string;
     attendeeName: string;
-    attendeeEmail: string;
   }>;
 }
-
-

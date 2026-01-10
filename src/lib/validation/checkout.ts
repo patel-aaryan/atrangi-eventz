@@ -5,7 +5,7 @@ export const contactInfoSchema = z
   .object({
     firstName: z.string().min(1, "First name is required"),
     lastName: z.string().min(1, "Last name is required"),
-    email: z.email({ error: "Invalid email format" }),
+    email: z.email("Invalid email format"),
     confirmEmail: z.string().min(1, "Email confirmation is required"),
     phone: z.string().min(1, "Phone number is required"),
   })
@@ -20,11 +20,12 @@ export const attendeeInfoSchema = z.object({
   ticketName: z.string(),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  email: z.email({ error: "Invalid email format" }),
 });
 
 // Attendees Array Schema
-export const attendeesSchema = z.array(attendeeInfoSchema).min(1, "At least one attendee is required");
+export const attendeesSchema = z
+  .array(attendeeInfoSchema)
+  .min(1, "At least one attendee is required");
 
 // Full Checkout Form Schema
 export const checkoutFormSchema = z.object({
@@ -44,7 +45,9 @@ export type CheckoutFormOutput = z.output<typeof checkoutFormSchema>;
 export function formatContactErrors(
   errors: z.ZodError
 ): Partial<Record<keyof z.infer<typeof contactInfoSchema>, string>> {
-  const formatted: Partial<Record<keyof z.infer<typeof contactInfoSchema>, string>> = {};
+  const formatted: Partial<
+    Record<keyof z.infer<typeof contactInfoSchema>, string>
+  > = {};
 
   for (const error of errors.issues) {
     const path = error.path[0] as keyof z.infer<typeof contactInfoSchema>;
@@ -60,7 +63,9 @@ export function formatContactErrors(
 export function formatAttendeeErrors(
   errors: z.ZodError
 ): Partial<Record<keyof z.infer<typeof attendeeInfoSchema>, string>> {
-  const formatted: Partial<Record<keyof z.infer<typeof attendeeInfoSchema>, string>> = {};
+  const formatted: Partial<
+    Record<keyof z.infer<typeof attendeeInfoSchema>, string>
+  > = {};
 
   for (const error of errors.issues) {
     const path = error.path[0] as keyof z.infer<typeof attendeeInfoSchema>;
@@ -69,4 +74,3 @@ export function formatAttendeeErrors(
 
   return formatted;
 }
-

@@ -1,7 +1,6 @@
 export interface TicketForPdf {
   ticketCode: string;
   attendeeName: string;
-  attendeeEmail: string;
   tierName: string;
   price: number;
   qrCodeData: string;
@@ -21,4 +20,3 @@ export interface GeneratePdfResult {
   contentType: string;
   buffer: Buffer;
 }
-

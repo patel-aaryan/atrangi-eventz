@@ -4,7 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Phone } from "lucide-react";
-import type { UseFormRegister, FieldErrors, FieldValues } from "react-hook-form";
+import type {
+  UseFormRegister,
+  FieldErrors,
+  FieldValues,
+} from "react-hook-form";
 import type { CheckoutFormInput } from "@/lib/validation/checkout";
 
 interface ContactFormProps {
@@ -44,10 +48,16 @@ export function ContactForm({
               id="firstName"
               {...register("contact.firstName")}
               placeholder="John"
-              className={errors?.firstName && shouldShowError("firstName") ? "border-destructive" : ""}
+              className={
+                errors?.firstName && shouldShowError("firstName")
+                  ? "border-destructive"
+                  : ""
+              }
             />
             {errors?.firstName && shouldShowError("firstName") && (
-              <p className="text-sm text-destructive">{errors.firstName.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.firstName.message}
+              </p>
             )}
           </div>
 
@@ -59,10 +69,16 @@ export function ContactForm({
               id="lastName"
               {...register("contact.lastName")}
               placeholder="Doe"
-              className={errors?.lastName && shouldShowError("lastName") ? "border-destructive" : ""}
+              className={
+                errors?.lastName && shouldShowError("lastName")
+                  ? "border-destructive"
+                  : ""
+              }
             />
             {errors?.lastName && shouldShowError("lastName") && (
-              <p className="text-sm text-destructive">{errors.lastName.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.lastName.message}
+              </p>
             )}
           </div>
         </div>
@@ -76,7 +92,11 @@ export function ContactForm({
             type="email"
             {...register("contact.email")}
             placeholder="john.doe@example.com"
-            className={errors?.email && shouldShowError("email") ? "border-destructive" : ""}
+            className={
+              errors?.email && shouldShowError("email")
+                ? "border-destructive"
+                : ""
+            }
           />
           {errors?.email && shouldShowError("email") && (
             <p className="text-sm text-destructive">{errors.email.message}</p>
@@ -92,10 +112,16 @@ export function ContactForm({
             type="email"
             {...register("contact.confirmEmail")}
             placeholder="john.doe@example.com"
-            className={errors?.confirmEmail && shouldShowError("confirmEmail") ? "border-destructive" : ""}
+            className={
+              errors?.confirmEmail && shouldShowError("confirmEmail")
+                ? "border-destructive"
+                : ""
+            }
           />
           {errors?.confirmEmail && shouldShowError("confirmEmail") && (
-            <p className="text-sm text-destructive">{errors.confirmEmail.message}</p>
+            <p className="text-sm text-destructive">
+              {errors.confirmEmail.message}
+            </p>
           )}
         </div>
 
@@ -109,7 +135,11 @@ export function ContactForm({
               type="tel"
               {...register("contact.phone")}
               placeholder="(555) 123-4567"
-              className={errors?.phone && shouldShowError("phone") ? "border-destructive" : ""}
+              className={
+                errors?.phone && shouldShowError("phone")
+                  ? "border-destructive"
+                  : ""
+              }
             />
             <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           </div>

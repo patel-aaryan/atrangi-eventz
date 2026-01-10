@@ -237,7 +237,7 @@ export default function PaymentPage() {
         >
           <p className="text-destructive font-medium mb-4">{paymentError}</p>
           <Button
-            onClick={() => window.location.reload()}
+            onClick={() => globalThis.location.reload()}
             variant="outline"
             size="lg"
           >
@@ -308,7 +308,6 @@ export default function PaymentPage() {
           ticketId: attendee.ticketId,
           firstName: attendee.firstName,
           lastName: attendee.lastName,
-          email: attendee.email,
         })),
         contactInfo: {
           firstName: savedCheckoutData.contact.firstName,

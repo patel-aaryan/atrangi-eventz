@@ -76,7 +76,6 @@ class TicketService {
         const attendee = attendeesForTicket[i] || {
           firstName: data.contactInfo.firstName,
           lastName: data.contactInfo.lastName,
-          email: data.contactInfo.email,
         };
 
         ticketDataList.push({
@@ -92,10 +91,8 @@ class TicketService {
           priceAtPurchase: selection.pricePerTicket,
           attendeeFirstName: attendee.firstName,
           attendeeLastName: attendee.lastName,
-          attendeeEmail: attendee.email,
           buyerFirstName: data.contactInfo.firstName,
           buyerLastName: data.contactInfo.lastName,
-          buyerEmail: data.contactInfo.email,
           buyerPhone: data.contactInfo.phone,
           billingZip: data.billingInfo?.zip,
           billingAddress: data.billingInfo?.address,
@@ -153,7 +150,6 @@ class TicketService {
       tickets: ticketsWithQRCodes.map((ticket) => ({
         ticketCode: ticket.ticket_code,
         attendeeName: `${ticket.attendee_first_name} ${ticket.attendee_last_name}`,
-        attendeeEmail: ticket.attendee_email,
         tierName: ticket.tier_name,
         price: ticket.price_at_purchase,
         qrCodeData: ticket.qr_code_data!,
@@ -169,7 +165,6 @@ class TicketService {
         id: ticket.id,
         ticketCode: ticket.ticket_code,
         attendeeName: `${ticket.attendee_first_name} ${ticket.attendee_last_name}`,
-        attendeeEmail: ticket.attendee_email,
       })),
     };
   }

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,47 +11,42 @@ import { FaInstagram, FaYoutube, FaTiktok } from "react-icons/fa";
 import { Mail, Send } from "lucide-react";
 import { siteConfig } from "@/lib/metadata";
 import { usePathname } from "next/navigation";
+import { submitContactForm } from "@/lib/api/contact";
+import {
+  contactFormSchema,
+  type ContactFormInput,
+} from "@/lib/validation/contact";
 
 export function Footer() {
   const pathname = usePathname();
   const routesToHideFooter = ["/checkout", "/payment"];
   const hideFooter = routesToHideFooter.includes(pathname);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting, isValid },
+    reset,
+  } = useForm<ContactFormInput>({
+    resolver: zodResolver(contactFormSchema),
+    mode: "onChange",
+  });
 
-    // Simulate form submission - replace with actual API call
+  const onSubmit = async (data: ContactFormInput) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await submitContactForm(data);
       setSubmitStatus("success");
-      setFormData({ name: "", email: "", message: "" });
+      reset();
       setTimeout(() => setSubmitStatus("idle"), 3000);
-    } catch {
+    } catch (error) {
+      console.error("Error submitting contact form:", error);
       setSubmitStatus("error");
       setTimeout(() => setSubmitStatus("idle"), 3000);
-    } finally {
-      setIsSubmitting(false);
     }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
   };
 
   const quickLinks = [
@@ -157,35 +154,47 @@ export function Footer() {
               you!
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  type="text"
-                  name="name"
-                  placeholder="Your Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-                <Input
-                  type="email"
-                  name="email"
-                  placeholder="Your Email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
+                <div>
+                  <Input
+                    type="text"
+                    placeholder="Your Name"
+                    {...register("name")}
+                    className={errors.name ? "border-red-500" : ""}
+                  />
+                  {errors.name && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.name.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    type="email"
+                    placeholder="Your Email"
+                    {...register("email")}
+                    className={errors.email ? "border-red-500" : ""}
+                  />
+                  {errors.email && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
               </div>
               <div>
                 <Textarea
-                  name="message"
                   placeholder="Your Message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
+                  {...register("message")}
                   rows={6}
-                  className="resize-none min-h-32"
+                  className={`resize-none min-h-32 ${errors.message ? "border-red-500" : ""}`}
                 />
+                {errors.message && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.message.message}
+                  </p>
+                )}
               </div>
 
               {submitStatus === "success" && (
@@ -202,7 +211,7 @@ export function Footer() {
 
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid}
                 className="w-full sm:w-auto bg-gradient-to-r from-primary to-pink-500 hover:opacity-90"
               >
                 {isSubmitting ? (

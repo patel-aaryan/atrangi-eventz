@@ -61,9 +61,6 @@ export function TicketDocument({ payload }: Readonly<TicketDocumentProps>) {
                 <View>
                   <Text style={styles.ticketTier}>{ticket.tierName}</Text>
                   <Text style={styles.attendeeName}>{ticket.attendeeName}</Text>
-                  <Text style={styles.attendeeEmail}>
-                    {ticket.attendeeEmail}
-                  </Text>
                   <Text style={styles.ticketCode}>
                     Ticket #{ticket.ticketCode}
                   </Text>

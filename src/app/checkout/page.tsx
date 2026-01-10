@@ -113,7 +113,6 @@ export default function CheckoutPage() {
           ticketName: selection.ticketName,
           firstName: savedAttendee?.firstName || "",
           lastName: savedAttendee?.lastName || "",
-          email: savedAttendee?.email || "",
         });
       }
     }
@@ -172,8 +171,7 @@ export default function CheckoutPage() {
             </span>
           </h1>
           <p className="text-lg text-muted-foreground">
-            Tell us who&apos;s attending so we can send tickets to the right
-            people
+            Tell us who&apos;s attending
           </p>
         </motion.div>
 

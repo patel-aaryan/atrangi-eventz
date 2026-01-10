@@ -48,7 +48,6 @@ export interface AttendeeInfo {
   ticketName: string;
   firstName: string;
   lastName: string;
-  email: string;
 }
 
 export interface ContactInfo {

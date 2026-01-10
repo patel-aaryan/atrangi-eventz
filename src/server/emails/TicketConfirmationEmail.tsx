@@ -4,7 +4,6 @@ import React from "react";
 interface Ticket {
   ticketCode: string;
   attendeeName: string;
-  attendeeEmail: string;
   tierName: string;
   price: number;
   qrCodeData: string;
@@ -88,8 +87,7 @@ export default function TicketConfirmationEmail({
             Ticket {index + 1}: {ticket.tierName}
           </h3>
           <p>
-            <strong>Attendee:</strong> {ticket.attendeeName} (
-            {ticket.attendeeEmail})
+            <strong>Attendee:</strong> {ticket.attendeeName}
           </p>
           <p>
             <strong>Ticket Code:</strong> {ticket.ticketCode}

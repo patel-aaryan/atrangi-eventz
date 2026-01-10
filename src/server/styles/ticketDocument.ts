@@ -79,11 +79,6 @@ export const ticketDocumentStyles = StyleSheet.create({
     fontSize: 13,
     fontWeight: 500,
     color: "#f9fafb",
-    marginBottom: 2,
-  },
-  attendeeEmail: {
-    fontSize: 10,
-    color: "#9ca3af",
     marginBottom: 8,
   },
   ticketCode: {
@@ -133,4 +128,3 @@ export const ticketDocumentStyles = StyleSheet.create({
     textAlign: "center",
   },
 });
-
