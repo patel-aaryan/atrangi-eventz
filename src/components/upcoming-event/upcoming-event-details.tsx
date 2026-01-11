@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Info, MapPin, Building2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { UpcomingEventItem } from "@/types/event";
 
 interface UpcomingEventDetailsProps {
@@ -19,103 +18,50 @@ export function UpcomingEventDetails({ event }: UpcomingEventDetailsProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
-      className="space-y-6"
+      className="space-y-8"
     >
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-primary/10">
-          <Info className="w-6 h-6 text-primary" />
+      {/* Header */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <Info className="w-8 h-8 text-primary" />
+          <h2 className="text-3xl sm:text-4xl font-bold">Event Details</h2>
         </div>
-        <h2 className="text-3xl sm:text-4xl font-bold">Event Details</h2>
+        <p className="text-muted-foreground text-lg">
+          Everything you need to know about this event
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Venue Information */}
-        {hasVenueDetails && (
-          <Card className="border-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-primary" />
-                Venue
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {event.venue_name && (
-                <div className="flex items-start gap-2">
-                  <Building2 className="w-4 h-4 text-muted-foreground mt-1" />
-                  <div>
-                    <p className="font-semibold">{event.venue_name}</p>
-                    {event.venue_city && (
-                      <p className="text-sm text-muted-foreground">
-                        {event.venue_city}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Capacity Information */}
-        {event.total_capacity && (
-          <Card className="border-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Info className="w-5 h-5 text-pink-500" />
-                Capacity
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Total Capacity</span>
-                  <span className="font-bold text-lg">
-                    {event.total_capacity}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">
-                    Tickets Available
-                  </span>
-                  <span className="font-bold text-lg text-primary">
-                    {event.tickets_remaining}
-                  </span>
-                </div>
-                {/* Progress Bar */}
-                <div className="w-full bg-secondary rounded-full h-2.5 mt-3">
-                  <div
-                    className="bg-gradient-to-r from-primary to-pink-500 h-2.5 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${((event.total_capacity - event.tickets_remaining) / event.total_capacity) * 100}%`,
-                    }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground text-center mt-2">
-                  {Math.round(
-                    ((event.total_capacity - event.tickets_remaining) /
-                      event.total_capacity) *
-                      100
-                  )}
-                  % sold
-                </p>
+      {/* Venue Information */}
+      {hasVenueDetails && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-primary" />
+            <h3 className="text-xl font-semibold">Venue</h3>
+          </div>
+          <div className="pl-7 space-y-1">
+            {event.venue_name && (
+              <div className="flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-muted-foreground" />
+                <p className="text-base font-medium">{event.venue_name}</p>
               </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+            )}
+            {event.venue_city && (
+              <p className="text-base text-muted-foreground pl-6">
+                {event.venue_city}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
-      {/* Full Description */}
+      {/* Description */}
       {event.description && (
-        <Card className="border-2">
-          <CardHeader>
-            <CardTitle>About This Event</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-              {event.description}
-            </p>
-          </CardContent>
-        </Card>
+        <div className="space-y-3 pt-4 border-t">
+          <h3 className="text-xl font-semibold">About This Event</h3>
+          <p className="text-base text-muted-foreground leading-relaxed whitespace-pre-wrap">
+            {event.description}
+          </p>
+        </div>
       )}
     </motion.section>
   );
