@@ -45,10 +45,8 @@ export class TicketRepository {
         price_at_purchase,
         attendee_first_name,
         attendee_last_name,
-        attendee_email,
         buyer_first_name,
         buyer_last_name,
-        buyer_email,
         buyer_phone,
         billing_zip,
         billing_address,
@@ -61,7 +59,7 @@ export class TicketRepository {
         qr_code_data,
         status
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25
       )
       RETURNING *
     `;
@@ -79,10 +77,8 @@ export class TicketRepository {
       data.priceAtPurchase,
       data.attendeeFirstName,
       data.attendeeLastName,
-      data.attendeeEmail,
       data.buyerFirstName,
       data.buyerLastName,
-      data.buyerEmail,
       data.buyerPhone || null,
       data.billingZip || null,
       data.billingAddress || null,
@@ -120,13 +116,13 @@ export class TicketRepository {
           INSERT INTO tickets (
             event_id, order_id, order_number, order_subtotal, order_discount,
             order_processing_fee, order_total, tier_name, tier_index, price_at_purchase,
-            attendee_first_name, attendee_last_name, attendee_email,
-            buyer_first_name, buyer_last_name, buyer_email, buyer_phone,
+            attendee_first_name, attendee_last_name,
+            buyer_first_name, buyer_last_name, buyer_phone,
             billing_zip, billing_address, amount_paid, currency,
             stripe_payment_intent_id, stripe_charge_id, stripe_payment_method_id,
             payment_status, qr_code_data, status
           ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25
           )
           RETURNING *
         `;
@@ -144,10 +140,8 @@ export class TicketRepository {
           ticketData.priceAtPurchase,
           ticketData.attendeeFirstName,
           ticketData.attendeeLastName,
-          ticketData.attendeeEmail,
           ticketData.buyerFirstName,
           ticketData.buyerLastName,
-          ticketData.buyerEmail,
           ticketData.buyerPhone || null,
           ticketData.billingZip || null,
           ticketData.billingAddress || null,
@@ -219,10 +213,8 @@ export class TicketRepository {
       price_at_purchase: Number.parseFloat(row.price_at_purchase),
       attendee_first_name: row.attendee_first_name,
       attendee_last_name: row.attendee_last_name,
-      attendee_email: row.attendee_email,
       buyer_first_name: row.buyer_first_name,
       buyer_last_name: row.buyer_last_name,
-      buyer_email: row.buyer_email,
       buyer_phone: row.buyer_phone,
       billing_zip: row.billing_zip,
       billing_address: row.billing_address,

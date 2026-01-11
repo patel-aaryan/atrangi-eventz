@@ -21,7 +21,7 @@ export function EventsHeader({
       <motion.div variants={fadeInUp}>
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight">
           <span className="block bg-gradient-to-r from-primary via-pink-500 to-purple-500 bg-clip-text text-transparent">
-            Our Events
+            Past Events
           </span>
         </h1>
       </motion.div>
@@ -30,9 +30,8 @@ export function EventsHeader({
         variants={fadeInUp}
         className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto"
       >
-        Experience the best of Gujarati culture through our exciting events.
-        From high-energy Bollywood club nights to traditional Garba
-        celebrations, there&apos;s something for everyone.
+        Explore our past events and relive the memories of the amazing events
+        we&apos;ve hosted.
       </motion.p>
     </motion.div>
   );

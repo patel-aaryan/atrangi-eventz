@@ -44,6 +44,9 @@ export interface Event {
   tickets_remaining: number;
   is_sold_out: boolean;
 
+  // Media
+  banner_image_url: string | null;
+
   // Status and visibility
   status: EventStatus;
   is_featured: boolean;
@@ -72,6 +75,7 @@ export interface PastEventListItem {
   total_tickets_sold: number;
   num_sponsors: number;
   num_volunteers: number;
+  banner_image_url: string | null;
 }
 
 // Ticket tier without dynamic remaining count (for caching static data)
@@ -106,6 +110,7 @@ export interface UpcomingEventStatic {
   ticket_sales_open: string | null;
   ticket_sales_close: string | null;
   ticket_tiers: TicketTierStatic[];
+  banner_image_url: string | null;
 }
 
 // Full upcoming event (static + dynamic data combined)
@@ -140,6 +145,7 @@ export interface EventDetailStatic {
   meta_title: string | null;
   meta_description: string | null;
   tags: string[];
+  banner_image_url: string | null;
 }
 
 // Full event details for event detail page (static + dynamic)

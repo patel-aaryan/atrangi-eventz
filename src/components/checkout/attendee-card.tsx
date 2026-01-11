@@ -5,8 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { User, Mail } from "lucide-react";
-import type { UseFormRegister, FieldErrors, FieldValues } from "react-hook-form";
+import { User } from "lucide-react";
+import type {
+  UseFormRegister,
+  FieldErrors,
+  FieldValues,
+} from "react-hook-form";
 import type { CheckoutFormInput } from "@/lib/validation/checkout";
 
 interface AttendeeCardProps {
@@ -28,7 +32,9 @@ export function AttendeeCard({
   touchedFields,
   isSubmitted,
 }: Readonly<AttendeeCardProps>) {
-  const shouldShowError = (field: keyof CheckoutFormInput["attendees"][number]) => {
+  const shouldShowError = (
+    field: keyof CheckoutFormInput["attendees"][number]
+  ) => {
     return isSubmitted || touchedFields?.[field];
   };
   return (
@@ -57,10 +63,16 @@ export function AttendeeCard({
                 id={`firstName-${ticketId}`}
                 {...register(`attendees.${index}.firstName`)}
                 placeholder="John"
-                className={errors?.firstName && shouldShowError("firstName") ? "border-destructive" : ""}
+                className={
+                  errors?.firstName && shouldShowError("firstName")
+                    ? "border-destructive"
+                    : ""
+                }
               />
               {errors?.firstName && shouldShowError("firstName") && (
-                <p className="text-sm text-destructive">{errors.firstName.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.firstName.message}
+                </p>
               )}
             </div>
 
@@ -72,34 +84,18 @@ export function AttendeeCard({
                 id={`lastName-${ticketId}`}
                 {...register(`attendees.${index}.lastName`)}
                 placeholder="Doe"
-                className={errors?.lastName && shouldShowError("lastName") ? "border-destructive" : ""}
+                className={
+                  errors?.lastName && shouldShowError("lastName")
+                    ? "border-destructive"
+                    : ""
+                }
               />
               {errors?.lastName && shouldShowError("lastName") && (
-                <p className="text-sm text-destructive">{errors.lastName.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.lastName.message}
+                </p>
               )}
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={`email-${ticketId}`}>
-              Email Address <span className="text-destructive">*</span>
-            </Label>
-            <div className="relative">
-              <Input
-                id={`email-${ticketId}`}
-                type="email"
-                {...register(`attendees.${index}.email`)}
-                placeholder="john.doe@example.com"
-                className={errors?.email && shouldShowError("email") ? "border-destructive" : ""}
-              />
-              <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            </div>
-            {errors?.email && shouldShowError("email") && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Each attendee will receive their own ticket
-            </p>
           </div>
         </CardContent>
       </Card>

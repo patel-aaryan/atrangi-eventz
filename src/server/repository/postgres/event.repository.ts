@@ -28,7 +28,8 @@ export class EventRepository {
         venue_city,
         total_tickets_sold,
         num_sponsors,
-        num_volunteers
+        num_volunteers,
+        banner_image_url
       FROM events
       WHERE status = 'completed' 
         AND is_public = true
@@ -62,7 +63,8 @@ export class EventRepository {
         is_sold_out,
         ticket_sales_open,
         ticket_sales_close,
-        ticket_tiers
+        ticket_tiers,
+        banner_image_url
       FROM events
       WHERE id = $1
     `;
@@ -95,7 +97,8 @@ export class EventRepository {
         total_capacity,
         ticket_sales_open,
         ticket_sales_close,
-        ticket_tiers
+        ticket_tiers,
+        banner_image_url
       FROM events
       WHERE status = 'published' 
         AND is_public = true
@@ -166,6 +169,7 @@ export class EventRepository {
       total_tickets_sold: row.total_tickets_sold || 0,
       num_sponsors: row.num_sponsors || 0,
       num_volunteers: row.num_volunteers || 0,
+      banner_image_url: row.banner_image_url,
     };
   }
 
@@ -191,6 +195,7 @@ export class EventRepository {
       ticket_sales_close:
         row.ticket_sales_close?.toISOString() || row.ticket_sales_close,
       ticket_tiers: row.ticket_tiers || [],
+      banner_image_url: row.banner_image_url,
     };
   }
 
@@ -223,6 +228,7 @@ export class EventRepository {
         description: tier.description,
         features: tier.features,
       })),
+      banner_image_url: row.banner_image_url,
     };
   }
 
@@ -255,7 +261,8 @@ export class EventRepository {
         status,
         meta_title,
         meta_description,
-        tags
+        tags,
+        banner_image_url
       FROM events
       WHERE slug = $1
         AND is_public = true
@@ -309,6 +316,7 @@ export class EventRepository {
       meta_title: row.meta_title,
       meta_description: row.meta_description,
       tags: row.tags || [],
+      banner_image_url: row.banner_image_url,
     };
   }
 }

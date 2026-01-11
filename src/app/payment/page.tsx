@@ -70,7 +70,7 @@ export default function PaymentPage() {
       dispatch(clearPaymentIntent());
       dispatch(clearReservation());
       setTimeout(() => {
-        router.push("/events");
+        router.push("/upcoming-events");
       }, 3000);
     },
     enabled: !!storedReservation?.createdAt,
@@ -143,9 +143,7 @@ export default function PaymentPage() {
       }
 
       // Prevent duplicate PaymentIntent creation using ref (survives Strict Mode)
-      if (paymentIntentCreatedRef.current) {
-        return;
-      }
+      if (paymentIntentCreatedRef.current) return;
 
       const amountInCents = Math.round(total * 100);
 
@@ -218,7 +216,7 @@ export default function PaymentPage() {
   // Redirect if no event or tickets selected (only after loading completes)
   useEffect(() => {
     if (!isLoading && (!currentEvent || tickets.length === 0)) {
-      router.push("/events");
+      router.push("/upcoming-events");
     }
   }, [isLoading, currentEvent, tickets.length, router]);
 
@@ -239,7 +237,7 @@ export default function PaymentPage() {
         >
           <p className="text-destructive font-medium mb-4">{paymentError}</p>
           <Button
-            onClick={() => window.location.reload()}
+            onClick={() => globalThis.location.reload()}
             variant="outline"
             size="lg"
           >
@@ -310,7 +308,6 @@ export default function PaymentPage() {
           ticketId: attendee.ticketId,
           firstName: attendee.firstName,
           lastName: attendee.lastName,
-          email: attendee.email,
         })),
         contactInfo: {
           firstName: savedCheckoutData.contact.firstName,

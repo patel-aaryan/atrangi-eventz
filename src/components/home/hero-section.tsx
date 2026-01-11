@@ -3,8 +3,8 @@
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
-import { FaInstagram, FaYoutube } from "react-icons/fa";
 import Link from "next/link";
+import { FaInstagram, FaYoutube, FaTiktok } from "react-icons/fa";
 import { siteConfig } from "@/lib/metadata";
 
 interface HeroSectionProps {
@@ -72,7 +72,7 @@ export function HeroSection({
               </span>
             </h1>
             <p className="text-xl sm:text-2xl md:text-3xl text-muted-foreground font-medium">
-              Student Organization
+              Gujarati Student Organization
             </p>
           </motion.div>
 
@@ -80,15 +80,12 @@ export function HeroSection({
             variants={fadeInUp}
             className="text-lg sm:text-xl md:text-2xl text-foreground/80 max-w-3xl mx-auto leading-relaxed"
           >
-            Uniting Gujarati Students of Ontario with exciting{" "}
+            Uniting{" "}
             <span className="text-primary font-semibold">
-              Bollywood club parties
-            </span>
-            ,{" "}
-            <span className="text-pink-500 font-semibold">
-              vibrant garba events
-            </span>
-            {", "}and much more!
+              Students of Ontario
+            </span>{" "}
+            with exciting{" "}
+            <span className="text-pink-500 font-semibold">cultural events</span>
           </motion.p>
 
           <motion.div
@@ -100,7 +97,7 @@ export function HeroSection({
               size="lg"
               className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-pink-500 hover:opacity-90"
             >
-              <Link href="#events">Explore Events</Link>
+              <Link href="/past-events">Explore Events</Link>
             </Button>
             <Button
               asChild
@@ -116,41 +113,48 @@ export function HeroSection({
             variants={fadeInUp}
             className="flex gap-6 justify-center items-center pt-8"
           >
-            <Link
-              href={siteConfig.links.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground/60 hover:text-foreground transition-colors"
+            <motion.div
+              whileHover={{ scale: 1.2, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
             >
-              <FaInstagram className="w-6 h-6" />
-            </Link>
-            <Link
-              href={siteConfig.links.youtube}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground/60 hover:text-foreground transition-colors"
+              <Link
+                href={siteConfig.links.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground/60 hover:text-pink-500 transition-colors"
+              >
+                <FaInstagram className="w-6 h-6" />
+              </Link>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.2, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
             >
-              <FaYoutube className="w-6 h-6" />
-            </Link>
+              <Link
+                href={siteConfig.links.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground/60 hover:text-red-600 transition-colors"
+              >
+                <FaYoutube className="w-6 h-6" />
+              </Link>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.2, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <Link
+                href={siteConfig.links.tiktok}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground/60 hover:text-black dark:hover:text-white transition-colors"
+              >
+                <FaTiktok className="w-6 h-6" />
+              </Link>
+            </motion.div>
           </motion.div>
         </motion.div>
       </div>
-
-      {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-6 h-10 border-2 border-foreground/20 rounded-full flex justify-center pt-2"
-        >
-          <motion.div className="w-1.5 h-1.5 bg-foreground/40 rounded-full" />
-        </motion.div>
-      </motion.div>
     </section>
   );
 }

@@ -6,6 +6,7 @@ export const siteConfig = {
     "Uniting Gujarati Students of Ontario with exciting Bollywood club parties, vibrant garba events, and much more!",
   url: "https://www.atrangieventz.com",
   ogImage: "https://www.atrangieventz.com/og-image.jpg",
+  email: process.env.NEXT_PUBLIC_EMAIL || "outreach.atrangieventz@gmail.com",
   links: {
     tiktok: "https://www.tiktok.com/@atrangieventz",
     instagram: "https://www.instagram.com/atrangieventz",

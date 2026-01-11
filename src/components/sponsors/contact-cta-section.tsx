@@ -4,6 +4,7 @@ import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
 import Link from "next/link";
+import { siteConfig } from "@/lib/metadata";
 
 interface ContactCTASectionProps {
   readonly fadeInUp: Variants;
@@ -31,10 +32,13 @@ export function ContactCTASection({ fadeInUp }: ContactCTASectionProps) {
           size="lg"
           className="bg-gradient-to-r from-primary to-pink-500 hover:opacity-90"
         >
-          <Link href="/#contact">Contact Us</Link>
+          <a href={`mailto:${siteConfig.email}?subject=Sponsorship Inquiry`}>
+            <Mail className="w-5 h-5 mr-2" />
+            Contact Us
+          </a>
         </Button>
         <Button asChild size="lg" variant="outline">
-          <Link href="/events">View Our Events</Link>
+          <Link href="/past-events">View Our Events</Link>
         </Button>
       </div>
     </motion.div>

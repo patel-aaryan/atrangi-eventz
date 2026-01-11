@@ -2,75 +2,81 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FaInstagram, FaYoutube, FaTiktok } from "react-icons/fa";
-import { Mail, Send, MapPin } from "lucide-react";
+import { Mail, Send } from "lucide-react";
 import { siteConfig } from "@/lib/metadata";
 import { usePathname } from "next/navigation";
+import { submitContactForm } from "@/lib/api/contact";
+import {
+  contactFormSchema,
+  type ContactFormInput,
+} from "@/lib/validation/contact";
 
 export function Footer() {
   const pathname = usePathname();
   const routesToHideFooter = ["/checkout", "/payment"];
   const hideFooter = routesToHideFooter.includes(pathname);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
 
-  const email = process.env.NEXT_PUBLIC_EMAIL;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting, isValid },
+    reset,
+  } = useForm<ContactFormInput>({
+    resolver: zodResolver(contactFormSchema),
+    mode: "onChange",
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    // Simulate form submission - replace with actual API call
+  const onSubmit = async (data: ContactFormInput) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await submitContactForm(data);
       setSubmitStatus("success");
-      setFormData({ name: "", email: "", message: "" });
+      reset();
       setTimeout(() => setSubmitStatus("idle"), 3000);
-    } catch {
+    } catch (error) {
+      console.error("Error submitting contact form:", error);
       setSubmitStatus("error");
       setTimeout(() => setSubmitStatus("idle"), 3000);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const quickLinks = [
+    { name: "Home", href: "/" },
+    { name: "About Us", href: "/#about" },
+    { name: "Upcoming Events", href: "/upcoming-events" },
+    { name: "Past Events", href: "/past-events" },
+    { name: "Sponsors", href: "/sponsors" },
+  ];
 
   const socialLinks = [
     {
       name: "Instagram",
       icon: FaInstagram,
       href: siteConfig.links.instagram,
+      handle: "@atrangieventz",
       color: "hover:text-pink-500",
     },
     {
       name: "YouTube",
       icon: FaYoutube,
       href: siteConfig.links.youtube,
+      handle: "@atrangieventz",
       color: "hover:text-red-600",
     },
     {
       name: "TikTok",
       icon: FaTiktok,
       href: siteConfig.links.tiktok,
+      handle: "@atrangieventz",
       color: "hover:text-foreground",
     },
   ];
@@ -93,74 +99,46 @@ export function Footer() {
                 experiences, exciting events, and lasting connections.
               </p>
 
-              {/* Social Links */}
-              <div className="flex gap-4">
+              {/* Quick Links */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+                <ul className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                  {quickLinks.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.href}
+                        className="hover:text-foreground transition-colors"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Social Links & Contact */}
+              <div className="grid grid-cols-2 gap-4">
                 {socialLinks.map((social) => (
                   <Link
                     key={social.name}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`p-3 rounded-full bg-background border border-border ${social.color} transition-all hover:scale-110`}
+                    className={`flex items-center gap-2 px-4 py-3 rounded-full bg-background border border-border ${social.color} transition-all hover:scale-105 text-sm text-muted-foreground hover:text-foreground`}
                     aria-label={social.name}
                   >
                     <social.icon className="w-5 h-5" />
+                    <span>{social.handle}</span>
                   </Link>
                 ))}
-              </div>
-            </div>
-
-            {/* Quick Links & Contact Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              {/* Quick Links */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>
-                    <Link
-                      href="/"
-                      className="hover:text-foreground transition-colors"
-                    >
-                      Home
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/events"
-                      className="hover:text-foreground transition-colors"
-                    >
-                      Events
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/sponsors"
-                      className="hover:text-foreground transition-colors"
-                    >
-                      Sponsors
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Contact Info */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
-                <div className="space-y-3 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-primary" />
-                    <span>Ontario, Canada</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-primary" />
-                    <a
-                      href="mailto:contact@atrangieventz.com"
-                      className="hover:text-foreground transition-colors"
-                    >
-                      {email}
-                    </a>
-                  </div>
-                </div>
+                <a
+                  href={`mailto:${siteConfig.email}`}
+                  className="flex items-center gap-2 px-4 py-3 rounded-full bg-background border border-border transition-all hover:scale-105 text-sm text-muted-foreground hover:text-primary"
+                  aria-label="Email"
+                >
+                  <Mail className="w-5 h-5" />
+                  <span>{siteConfig.email}</span>
+                </a>
               </div>
             </div>
           </div>
@@ -176,35 +154,47 @@ export function Footer() {
               you!
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  type="text"
-                  name="name"
-                  placeholder="Your Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-                <Input
-                  type="email"
-                  name="email"
-                  placeholder="Your Email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
+                <div>
+                  <Input
+                    type="text"
+                    placeholder="Your Name"
+                    {...register("name")}
+                    className={errors.name ? "border-red-500" : ""}
+                  />
+                  {errors.name && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.name.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    type="email"
+                    placeholder="Your Email"
+                    {...register("email")}
+                    className={errors.email ? "border-red-500" : ""}
+                  />
+                  {errors.email && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
               </div>
               <div>
                 <Textarea
-                  name="message"
                   placeholder="Your Message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
+                  {...register("message")}
                   rows={6}
-                  className="resize-none min-h-32"
+                  className={`resize-none min-h-32 ${errors.message ? "border-red-500" : ""}`}
                 />
+                {errors.message && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.message.message}
+                  </p>
+                )}
               </div>
 
               {submitStatus === "success" && (
@@ -221,7 +211,7 @@ export function Footer() {
 
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid}
                 className="w-full sm:w-auto bg-gradient-to-r from-primary to-pink-500 hover:opacity-90"
               >
                 {isSubmitting ? (
@@ -234,15 +224,6 @@ export function Footer() {
                 )}
               </Button>
             </form>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-border">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>
-              © {new Date().getFullYear()} Atrangi Eventz. All rights reserved.
-            </p>
           </div>
         </div>
       </div>

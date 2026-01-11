@@ -11,10 +11,8 @@ export interface CreateTicketData {
   priceAtPurchase: number;
   attendeeFirstName: string;
   attendeeLastName: string;
-  attendeeEmail: string;
   buyerFirstName: string;
   buyerLastName: string;
-  buyerEmail: string;
   buyerPhone?: string;
   billingZip?: string;
   billingAddress?: string;
@@ -42,10 +40,8 @@ export interface Ticket {
   price_at_purchase: number;
   attendee_first_name: string;
   attendee_last_name: string;
-  attendee_email: string;
   buyer_first_name: string;
   buyer_last_name: string;
-  buyer_email: string;
   buyer_phone: string | null;
   billing_zip: string | null;
   billing_address: string | null;

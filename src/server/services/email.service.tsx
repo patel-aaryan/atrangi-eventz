@@ -1,6 +1,7 @@
 import { mg } from "../config/mailgun";
 import { render } from "@react-email/render";
 import TicketConfirmationEmail from "../emails/TicketConfirmationEmail";
+import ContactFormEmail from "../emails/ContactFormEmail";
 import { pdfService } from "./pdf.service";
 import type { EmailOptions } from "../types/email";
 
@@ -54,7 +55,6 @@ class EmailService {
     tickets: Array<{
       ticketCode: string;
       attendeeName: string;
-      attendeeEmail: string;
       tierName: string;
       price: number;
       qrCodeData: string;
@@ -107,6 +107,33 @@ class EmailService {
           contentType: pdf.contentType,
         },
       ],
+    });
+  }
+
+  async sendContactFormEmail(data: {
+    name: string;
+    email: string;
+    message: string;
+  }): Promise<void> {
+    const recipientEmail =
+      process.env.NEXT_PUBLIC_EMAIL || "outreach.atrangieventz@gmail.com";
+
+    const html = await render(
+      <ContactFormEmail
+        name={data.name}
+        email={data.email}
+        message={data.message}
+      />
+    );
+
+    const text = `New Contact Form Submission\n\nFrom: ${data.name}\nEmail: ${data.email}\n\nMessage:\n${data.message}\n\n---\nSent from Atrangi Eventz Website Contact Form`;
+
+    await this.sendEmail({
+      to: recipientEmail,
+      subject: `📬 Contact Form: Message from ${data.name}`,
+      html,
+      text,
+      from: this.defaultFrom,
     });
   }
 }
