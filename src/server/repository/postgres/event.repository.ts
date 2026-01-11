@@ -63,7 +63,8 @@ export class EventRepository {
         is_sold_out,
         ticket_sales_open,
         ticket_sales_close,
-        ticket_tiers
+        ticket_tiers,
+        banner_image_url
       FROM events
       WHERE id = $1
     `;
@@ -194,6 +195,7 @@ export class EventRepository {
       ticket_sales_close:
         row.ticket_sales_close?.toISOString() || row.ticket_sales_close,
       ticket_tiers: row.ticket_tiers || [],
+      banner_image_url: row.banner_image_url,
     };
   }
 
